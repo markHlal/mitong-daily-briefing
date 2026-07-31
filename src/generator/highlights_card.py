@@ -1,6 +1,5 @@
-"""Apple-style highlights card image generator."""
+"""Apple-style highlights card image generator — Polished v2."""
 
-import os
 from pathlib import Path
 from PIL import Image, ImageDraw
 
@@ -9,6 +8,8 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+W, H = 1242, 1656
+
 
 def _hex_to_rgb(hex_color: str) -> tuple:
     """Convert #RRGGBB to (R, G, B) tuple."""
@@ -16,44 +17,64 @@ def _hex_to_rgb(hex_color: str) -> tuple:
     return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
 
+def _draw_gradient_bg(draw: ImageDraw.Draw, width: int, height: int):
+    """Draw a subtle top-to-bottom gradient."""
+    top = (255, 255, 255)
+    bottom = (245, 247, 250)
+    for y in range(height):
+        ratio = y / height
+        r = int(top[0] * (1 - ratio) + bottom[0] * ratio)
+        g = int(top[1] * (1 - ratio) + bottom[1] * ratio)
+        b = int(top[2] * (1 - ratio) + bottom[2] * ratio)
+        draw.line([(0, y), (width, y)], fill=(r, g, b))
+
+
+def _draw_text_bold(draw: ImageDraw.Draw, xy, text, fill, font):
+    """Draw text — no fake bold, use larger font size for emphasis instead."""
+    draw.text(xy, text, fill=fill, font=font)
+    """Draw text with a subtle stroke for bold-like effect."""
+    x, y = xy
+    draw.text((x - 1, y), text, fill=fill, font=font)
+    draw.text((x + 1, y), text, fill=fill, font=font)
+    draw.text((x, y - 1), text, fill=fill, font=font)
+    draw.text((x, y + 1), text, fill=fill, font=font)
+    draw.text((x, y), text, fill=fill, font=font)
+
+
 def generate_highlights_image(news_list: list[dict], date_str: str) -> Image.Image:
     """Generate Apple-style highlights image (1242×1656) with 3 full-width cards."""
-    W, H = 1242, 1656
     img = Image.new("RGB", (W, H), (245, 247, 250))
     draw = ImageDraw.Draw(img)
 
-    # Subtle top gradient: white → #F5F7FA
-    for y in range(250):
-        ratio = y / 250
-        r = int(245 + (255 - 245) * (1 - ratio))
-        g = int(247 + (255 - 247) * (1 - ratio))
-        b = int(250 + (255 - 250) * (1 - ratio))
-        draw.line([(0, y), (W, y)], fill=(r, g, b))
+    _draw_gradient_bg(draw, W, H)
 
-    # Fonts
+    # ── Fonts ──
     font_small = get_font(18)
-    font_title = get_font(64)
-    font_date = get_font(40)
+    font_title = get_font(72)           # Bigger main title
+    font_date = get_font(26)
     font_cat = get_font(22)
-    font_item_title = get_font(34)
+    font_item_title = get_font(36)      # Bigger card title
     font_item_desc = get_font(20)
     font_footer = get_font(24)
     font_tiny = get_font(16)
-    font_brand = get_font(26)
+    font_brand = get_font(28)
 
-    # Top bar
-    draw.text((60, 45), "AI 早报", fill=(80, 80, 85), font=font_small)
-    draw.text((W - 160, 45), "DAILY BRIEF", fill=(150, 150, 155), font=font_small)
-    draw.line([(60, 78), (W - 60, 78)], fill=(230, 230, 235), width=1)
+    # ── Top bar ──
+    draw.text((60, 40), "AI 早报", fill=(80, 80, 85), font=font_small)
+    draw.text((W - 160, 40), "DAILY BRIEF", fill=(150, 150, 155), font=font_small)
+    draw.line([(60, 73), (W - 60, 73)], fill=(230, 230, 235), width=1)
 
-    # Big title
-    draw.text((60, 110), "AI早报", fill=(0, 0, 0), font=font_title)
+    # ── Big title ──
+    _draw_text_bold(draw, (60, 95), "AI早报", fill=(0, 0, 0), font=font_title)
 
     # Date
-    draw.text((60, 200), date_str, fill=(120, 120, 125), font=get_font(28))
+    draw.text((60, 185), date_str, fill=(110, 110, 115), font=font_date)
+
+    # Apple Blue accent line
+    draw.line([(60, 175), (200, 175)], fill=(0, 122, 255), width=3)
 
     # Tags — Apple-style pills
-    tag_y = 250
+    tag_y = 215
     tags = ["10 秒速览", "Agent · 推理 · 算力"]
     tag_x = 60
     for tag in tags:
@@ -65,83 +86,83 @@ def generate_highlights_image(news_list: list[dict], date_str: str) -> Image.Ima
             outline=(220, 220, 225),
             width=1,
         )
-        draw.text((tag_x + 18, tag_y + 7), tag, fill=(80, 80, 85), font=font_small)
+        draw.text((tag_x + 18, tag_y + 7), tag, fill=(70, 70, 75), font=font_small)
         tag_x += tw + 12
 
     # Section title
-    draw.text((60, 320), "今日看点", fill=(0, 0, 0), font=font_date)
-    draw.line([(60, 380), (200, 380)], fill=(0, 122, 255), width=3)
+    font_section = get_font(42)
+    draw.text((60, 280), "今日看点", fill=(0, 0, 0), font=font_section)
+    draw.line([(60, 335), (200, 335)], fill=(0, 122, 255), width=3)
 
-    # Highlight cards — large, clean, vertical
-    card_h = 300
-    start_y = 420
-    gap_y = 24
+    # ── Highlight cards — large, clean, vertical ──
+    card_h = 290
+    start_y = 360
+    gap_y = 20
 
     for i, item in enumerate(news_list[:3]):
         y = start_y + i * (card_h + gap_y)
 
-        # White card
+        # Shadow layer
+        draw.rounded_rectangle(
+            [(52, y + 3), (W - 48, y + card_h)],
+            radius=28,
+            fill=(235, 237, 240),
+        )
+        # Card surface
         draw.rounded_rectangle(
             [(50, y), (W - 50, y + card_h)],
             radius=28,
             fill=(255, 255, 255),
-            outline=(235, 235, 240),
+            outline=(230, 230, 235),
             width=1,
         )
 
-        # Large number circle (56px)
-        cx, cy = 90, y + 40
-        draw.ellipse([(cx, cy), (cx + 56, cy + 56)], outline=(200, 200, 205), width=2)
-        draw.text((cx + 14, cy + 12), f"{i + 1:02d}", fill=(120, 120, 125), font=get_font(22))
+        # Large number circle (52px)
+        cx, cy = 85, y + 32
+        draw.ellipse([(cx, cy), (cx + 52, cy + 52)], outline=(200, 200, 205), width=2)
+        draw.text((cx + 12, cy + 10), f"{i + 1:02d}", fill=(110, 110, 115), font=get_font(20))
 
-        # Category with dot — enlarged for visibility
+        # Category with enlarged dot
         cat_color = _hex_to_rgb(item.get("category_color", "#007AFF"))
-        cat_x = 170
+        cat_x = 155
         draw.ellipse([(cat_x, cy + 14), (cat_x + 16, cy + 30)], fill=cat_color)
-        draw.text((cat_x + 22, cy + 12), item.get("category", ""), fill=(80, 80, 85), font=font_cat)
-        cat_color = _hex_to_rgb(item.get("category_color", "#007AFF"))
-        cat_x = 170
-        draw.ellipse([(cat_x, cy + 16), (cat_x + 10, cy + 26)], fill=cat_color)
-        draw.text((cat_x + 18, cy + 10), item.get("category", ""), fill=(80, 80, 85), font=font_cat)
+        draw.text((cat_x + 22, cy + 12), item.get("category", ""), fill=(70, 70, 75), font=font_cat)
 
-        # Title
-        draw.text((170, cy + 55), item.get("title", ""), fill=(20, 20, 25), font=font_item_title)
+        # Title — bold
+        _draw_text_bold(draw, (cat_x, cy + 48), item.get("title", ""), fill=(10, 10, 12), font=font_item_title)
 
         # Desc
-        draw.text((170, cy + 105), item.get("brief", ""), fill=(120, 120, 125), font=font_item_desc)
+        draw.text((cat_x, cy + 92), item.get("brief", ""), fill=(110, 110, 115), font=font_item_desc)
 
-    # Bottom banner — Apple blue pill
-    banner_y = H - 220
+    # ── Bottom banner — Apple blue pill ──
+    banner_y = H - 210
     draw.rounded_rectangle(
-        [(50, banner_y), (W - 50, banner_y + 70)],
+        [(50, banner_y), (W - 50, banner_y + 68)],
         radius=20,
         fill=(0, 122, 255),
     )
     draw.text(
-        (W // 2 - 180, banner_y + 20),
+        (W // 2 - 190, banner_y + 18),
         "16 条 AI 要闻 · 2 页速览 · 10 秒看完",
         fill=(255, 255, 255),
         font=font_footer,
     )
     draw.text(
-        (W // 2 - 120, banner_y + 48),
+        (W // 2 - 120, banner_y + 46),
         "不构成任何建议，仅供信息参考",
         fill=(180, 210, 255),
         font=font_tiny,
     )
 
     # Brand
-    draw.text((W // 2 - 60, H - 100), "米桶 AI", fill=(0, 122, 255), font=font_brand)
-    draw.text((W // 2 - 50, H - 65), "Daily Brief", fill=(150, 150, 155), font=font_small)
+    _draw_text_bold(draw, (W // 2 - 65, H - 95), "米桶 AI", fill=(0, 122, 255), font=font_brand)
+    draw.text((W // 2 - 55, H - 58), "Daily Brief", fill=(140, 140, 145), font=font_small)
 
     return img
 
 
 def save_highlights_image(news_list: list[dict], date_str: str) -> Path:
-    """Generate and save the highlights image to output/YYYY-MM-DD/highlights.png.
-
-    date_str is expected in the form "YYYY.MM.DD".
-    """
+    """Generate and save the highlights image to output/YYYY-MM-DD/highlights.png."""
     date_part = date_str.replace(".", "-")
     out_dir = Path("output") / date_part
     out_dir.mkdir(parents=True, exist_ok=True)
