@@ -1,0 +1,20 @@
+sources:
+  - name: "机器之心"
+    type: rss
+    url: "https://www.jiqizhixin.com/rss"
+    enabled: true
+
+  - name: "量子位"
+    type: rss
+    url: "https://www.qbitai.com/feed"
+    enabled: true
+
+  - name: "36氪"
+    type: rss
+    url: "https://36kr.com/feed"
+    enabled: true
+
+  - name: "TechCrunch"
+    type: rss
+    url: "https://techcrunch.com/feed/"
+    enabled: false

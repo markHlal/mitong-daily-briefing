@@ -1,0 +1,21 @@
+categories:
+  - id: "agent"
+    name: "Agent"
+    color: "#007AFF"
+    priority: 1
+  - id: "model"
+    name: "模型"
+    color: "#AF52DE"
+    priority: 2
+  - id: "industry"
+    name: "产业"
+    color: "#34C759"
+    priority: 3
+  - id: "compute"
+    name: "算力"
+    color: "#FF9500"
+    priority: 4
+  - id: "security"
+    name: "安全"
+    color: "#FF3B30"
+    priority: 5
