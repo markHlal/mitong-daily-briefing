@@ -12,7 +12,9 @@ def _url_hash(url: str) -> str:
 
 def _title_similarity(a: str, b: str) -> float:
     return SequenceMatcher(None, a.split(), b.split()).ratio()
-    return SequenceMatcher(None, a, b).ratio()
+    return SequenceMatcher(None, a.split(), b.split()).ratio()
+
+    return SequenceMatcher(None, a.split(), b.split()).ratio()
 
 
 def deduplicate(news_list: list[dict]) -> list[dict]:
