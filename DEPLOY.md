@@ -127,3 +127,6 @@ schedule:
 ---
 
 **部署完成后，每天早 8 点会自动生成新的资讯早报并更新网站！** 🎉
+
+---
+Deployed on GitHub Pages ✓
