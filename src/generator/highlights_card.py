@@ -94,7 +94,11 @@ def generate_highlights_image(news_list: list[dict], date_str: str) -> Image.Ima
         draw.ellipse([(cx, cy), (cx + 56, cy + 56)], outline=(200, 200, 205), width=2)
         draw.text((cx + 14, cy + 12), f"{i + 1:02d}", fill=(120, 120, 125), font=get_font(22))
 
-        # Category with dot
+        # Category with dot — enlarged for visibility
+        cat_color = _hex_to_rgb(item.get("category_color", "#007AFF"))
+        cat_x = 170
+        draw.ellipse([(cat_x, cy + 14), (cat_x + 16, cy + 30)], fill=cat_color)
+        draw.text((cat_x + 22, cy + 12), item.get("category", ""), fill=(80, 80, 85), font=font_cat)
         cat_color = _hex_to_rgb(item.get("category_color", "#007AFF"))
         cat_x = 170
         draw.ellipse([(cat_x, cy + 16), (cat_x + 10, cy + 26)], fill=cat_color)

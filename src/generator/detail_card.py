@@ -84,7 +84,11 @@ def generate_detail_image(news_list: list[dict], date_str: str) -> Image.Image:
             width=1,
         )
 
-        # Category dot + label
+        # Category dot + label — enlarged dot for visibility
+        cat_color = _hex_to_rgb(news.get("category_color", "#007AFF"))
+        dot_x, dot_y = x + 24, y + 20
+        draw.ellipse([(dot_x, dot_y), (dot_x + 16, dot_y + 16)], fill=cat_color)
+        draw.text((dot_x + 22, dot_y + 1), news.get("category", ""), fill=(80, 80, 85), font=font_badge)
         cat_color = _hex_to_rgb(news.get("category_color", "#007AFF"))
         dot_x, dot_y = x + 24, y + 20
         draw.ellipse([(dot_x, dot_y), (dot_x + 10, dot_y + 10)], fill=cat_color)
