@@ -103,3 +103,21 @@
 2026-07-31 19:33:13 | main | INFO | Step 5: Publishing...
 2026-07-31 19:33:13 | publisher.wechat | INFO | WeChat not configured. Images saved locally.
 2026-07-31 19:33:13 | main | INFO | Pipeline complete: {'status': 'success', 'collected': 40, 'unique': 40, 'curated': 16, 'detail_image': 'output/2026-07-31/detail.png', 'highlights_image': 'output/2026-07-31 Fri/highlights.png', 'published': False}
+2026-07-31 19:36:05 | main | INFO | ==================================================
+2026-07-31 19:36:05 | main | INFO | Starting daily briefing: 2026.07.31 Fri
+2026-07-31 19:36:05 | main | INFO | Step 1: Collecting news...
+2026-07-31 19:36:05 | collector.rss_fetcher | INFO | Fetched 0 items from https://www.jiqizhixin.com/rss
+2026-07-31 19:36:05 | collector.rss_fetcher | INFO | Fetched 10 items from https://www.qbitai.com/feed
+2026-07-31 19:36:06 | collector.rss_fetcher | INFO | Fetched 30 items from https://36kr.com/feed
+2026-07-31 19:36:06 | main | INFO | Step 2: Deduplicating...
+2026-07-31 19:36:06 | collector.dedup | INFO | Deduplicated: 40 → 40 items
+2026-07-31 19:36:06 | main | INFO | Step 3: Curating and ranking...
+2026-07-31 19:36:06 | curator.classifier | WARNING | LLM API request failed: 401 Client Error: Unauthorized for url: https://api.moonshot.cn/v1/chat/completions
+2026-07-31 19:36:06 | curator.classifier | INFO | Using rule-based classification
+2026-07-31 19:36:06 | curator.classifier | INFO | Curated 40 items into top 16
+2026-07-31 19:36:06 | main | INFO | Step 4: Generating images...
+2026-07-31 19:36:06 | generator.detail_card | INFO | Saved detail image to output/2026-07-31/detail.png
+2026-07-31 19:36:06 | generator.highlights_card | INFO | Saved highlights image to output/2026-07-31 Fri/highlights.png
+2026-07-31 19:36:06 | main | INFO | Step 5: Publishing...
+2026-07-31 19:36:06 | publisher.wechat | INFO | WeChat not configured. Images saved locally.
+2026-07-31 19:36:06 | main | INFO | Pipeline complete: {'status': 'success', 'collected': 40, 'unique': 40, 'curated': 16, 'detail_image': 'output/2026-07-31/detail.png', 'highlights_image': 'output/2026-07-31 Fri/highlights.png', 'published': False}
