@@ -139,3 +139,12 @@
 2026-08-03 19:06:47 | curator.classifier | INFO | LLM classified 1 items
 2026-08-03 19:06:47 | curator.classifier | INFO | LLM classified 1 items
 2026-08-03 19:06:47 | publisher.wechat | INFO | WeChat not configured. Images saved locally.
+2026-08-03 19:57:21 | collector.dedup | INFO | Deduplicated: 3 → 2 items
+2026-08-03 19:57:21 | collector.dedup | INFO | Deduplicated: 3 → 2 items
+2026-08-03 19:57:22 | curator.classifier | WARNING | LLM API request failed: 401 Client Error: Unauthorized for url: https://api.moonshot.cn/v1/chat/completions
+2026-08-03 19:57:22 | curator.classifier | INFO | Using rule-based classification
+2026-08-03 19:57:22 | curator.classifier | INFO | Curated 20 items into top 10
+2026-08-03 19:57:22 | curator.classifier | WARNING | LLM API request failed: 401 Client Error: Unauthorized for url: https://api.moonshot.cn/v1/chat/completions
+2026-08-03 19:57:22 | curator.classifier | INFO | LLM classified 1 items
+2026-08-03 19:57:22 | curator.classifier | INFO | LLM classified 1 items
+2026-08-03 19:57:22 | publisher.wechat | INFO | WeChat not configured. Images saved locally.

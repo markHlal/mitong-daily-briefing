@@ -17,9 +17,9 @@
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
     --shadow: 0 4px 24px rgba(0,0,0,0.06);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
-    --radius-sm: 16px;
-    --radius: 24px;
-    --radius-lg: 32px;
+    --radius-sm: 12px;
+    --radius: 20px;
+    --radius-lg: 28px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -70,9 +70,9 @@ body {
 
 /* Hero */
 .hero {
-    max-width: 860px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 140px 24px 60px;
+    padding: 130px 24px 40px;
     text-align: center;
 }
 .hero-badge {
@@ -85,7 +85,7 @@ body {
     border-radius: 100px;
     font-size: 14px;
     color: var(--text-secondary);
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     box-shadow: var(--shadow-sm);
 }
 .hero-badge .dot {
@@ -94,39 +94,23 @@ body {
     border-radius: 50%;
     animation: pulse 2s ease-in-out infinite;
 }
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .hero h1 {
-    font-size: 56px;
+    font-size: 48px;
     font-weight: 700;
-    letter-spacing: -1.5px;
+    letter-spacing: -1.2px;
     line-height: 1.1;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     background: linear-gradient(135deg, #1D1D1F 0%, #434344 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.hero-sub {
-    font-size: 21px;
-    color: var(--text-secondary);
-    font-weight: 400;
-    margin-bottom: 8px;
-}
-.hero-date {
-    font-size: 15px;
-    color: var(--text-tertiary);
-    font-weight: 500;
-}
+.hero-sub { font-size: 20px; color: var(--text-secondary); font-weight: 400; margin-bottom: 8px; }
+.hero-date { font-size: 15px; color: var(--text-tertiary); font-weight: 500; }
 
 /* Section */
-.section {
-    max-width: 860px;
-    margin: 0 auto 64px;
-    padding: 0 24px;
-}
+.section { max-width: 1100px; margin: 0 auto 64px; padding: 0 24px; }
 .section-header {
     display: flex;
     align-items: center;
@@ -156,144 +140,229 @@ body {
     border: 1px solid var(--border);
 }
 
-/* Image Card */
-.image-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    margin-bottom: 28px;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
-    will-change: transform;
-    cursor: pointer;
-}
-.image-card:hover {
-    transform: translateY(-6px) scale(1.005);
-    box-shadow: var(--shadow-lg);
-}
-.image-card img {
-    width: 100%;
-    display: block;
-    opacity: 1;
-    max-height: 75vh;
-    object-fit: contain;
-    background: #f0f0f2;
-}
-    width: 100%;
-    display: block;
-    opacity: 1;
-}
-.image-card .label {
-    padding: 18px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-    width: 100%;
-    display: block;
-    opacity: 1;
-}
-.image-card .label {
-    width: 100%;
-    display: block;
-    opacity: 1;
-}
-.image-card.animate-in img {
-    opacity: 0;
-    animation: imgFadeIn 0.8s ease forwards;
-}
-@keyframes imgFadeIn {
-    to { opacity: 1; }
-}
-.image-card .label {
-    padding: 18px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.label-text { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
-.label-tag {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 14px;
-    border-radius: 100px;
-    background: var(--blue-light);
-    color: var(--blue);
-    letter-spacing: 0.3px;
-}
-
-/* History */
-.history-section { max-width: 1200px; margin: 0 auto 80px; padding: 0 24px; }
-.history-grid {
+/* ── News Cards Grid ── */
+.news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
 }
-.history-card {
+@media (max-width: 1024px) {
+    .news-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+    .news-grid { grid-template-columns: 1fr; gap: 16px; }
+    .header { padding: 12px 20px; }
+    .hero { padding: 110px 20px 32px; }
+    .hero h1 { font-size: 36px; }
+    .hero-sub { font-size: 18px; }
+    .section { padding: 0 16px; margin-bottom: 48px; }
+}
+
+/* News Card */
+.news-card {
     background: var(--surface);
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
     text-decoration: none;
     color: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     will-change: transform;
-    opacity: 0;
-    transform: translateY(30px);
 }
-.history-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-.history-card:hover {
-    transform: translateY(-4px);
+.news-card:hover {
+    transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
 }
-.history-card .thumb-wrap {
+.card-image {
     position: relative;
-    overflow: hidden;
+    width: 100%;
     aspect-ratio: 16/10;
+    overflow: hidden;
+    background: #E8E8ED;
 }
-.history-card .thumb-wrap img {
+.card-image img {
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.history-card:hover .thumb-wrap img { transform: scale(1.05); }
-.history-card .overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.history-card:hover .overlay { opacity: 1; }
-.history-card .info {
-    padding: 20px 22px;
-}
-.history-card .date {
-    font-size: 17px;
-    font-weight: 600;
-    margin-bottom: 6px;
-    letter-spacing: -0.3px;
-}
-.history-card .meta {
-    font-size: 13px;
-    color: var(--text-tertiary);
+.news-card:hover .card-image img { transform: scale(1.06); }
+.card-image .placeholder {
+    width: 100%; height: 100%;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    font-size: 48px;
 }
+.card-category {
+    position: absolute;
+    top: 12px; left: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(10px);
+    color: var(--text);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+.card-body {
+    padding: 18px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card-summary {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.card-source {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+.card-time {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+/* ── Highlights Section (top 3) ── */
+.highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+@media (max-width: 1024px) {
+    .highlights-grid { grid-template-columns: 1fr; }
+}
+.highlight-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+.highlight-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+.highlight-card .card-image { aspect-ratio: 16/9; }
+.highlight-card .card-body { padding: 22px 24px 24px; }
+.highlight-card .card-title { font-size: 18px; }
+.highlight-card .card-summary { font-size: 14px; -webkit-line-clamp: 4; }
+
+/* ── Old Image Cards (for legacy images) ── */
+.image-card-lg {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+    cursor: pointer;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.image-card-lg:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+.image-card-lg img {
+    width: 100%;
+    display: block;
+    max-height: 70vh;
+    object-fit: contain;
+    background: #f0f0f2;
+}
+.image-card-lg .label {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ── History Section ── */
+.history-section { max-width: 1100px; margin: 0 auto 80px; padding: 0 24px; }
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+@media (max-width: 1024px) {
+    .history-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .history-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .history-grid { grid-template-columns: 1fr; }
+}
+.history-item {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+.history-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+.history-item img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+    display: block;
+}
+.history-item .info { padding: 14px 16px; }
+.history-item .date { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.history-item .meta { font-size: 12px; color: var(--text-tertiary); }
 
 /* Empty */
 .empty {
     text-align: center;
-    padding: 100px 20px;
+    padding: 80px 20px;
     color: var(--text-tertiary);
 }
-.empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.6; }
-.empty p { font-size: 16px; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
 
 /* Lightbox */
 .lightbox {
@@ -315,15 +384,14 @@ body {
     max-height: 90vh;
     border-radius: 16px;
     box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-    transform: scale(0.9);
+    transform: scale(0.92);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .lightbox.active img { transform: scale(1); }
 .lightbox .close {
     position: absolute;
-    top: 20px;
-    right: 28px;
-    font-size: 36px;
+    top: 20px; right: 28px;
+    font-size: 32px;
     color: rgba(255,255,255,0.8);
     cursor: pointer;
     width: 44px; height: 44px;
@@ -332,10 +400,10 @@ body {
     justify-content: center;
     border-radius: 50%;
     background: rgba(255,255,255,0.1);
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.2s;
     z-index: 10;
 }
-.lightbox .close:hover { background: rgba(255,255,255,0.2); color: white; }
+.lightbox .close:hover { background: rgba(255,255,255,0.25); color: white; }
 
 /* Footer */
 .footer {
@@ -344,21 +412,7 @@ body {
     color: var(--text-tertiary);
     font-size: 13px;
     border-top: 1px solid var(--border);
-    margin-top: 40px;
     line-height: 1.8;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .header { padding: 12px 20px; }
-    .hero { padding: 110px 20px 40px; }
-    .hero h1 { font-size: 38px; }
-    .hero-sub { font-size: 18px; }
-    .section { padding: 0 20px; margin-bottom: 48px; }
-    .history-section { padding: 0 20px; }
-    .history-grid { grid-template-columns: 1fr; gap: 16px; }
-    .image-card { border-radius: var(--radius); }
-    .image-card .label { padding: 14px 20px; }
 }
 </style>
 </head>
@@ -375,35 +429,147 @@ body {
         <p class="hero-date">📅 2026-07-31</p>
     </section>
 
+    
     <section class="section">
         <div class="section-header">
-            <h2 class="section-title">今日早报</h2>
+            <h2 class="section-title">今日看点</h2>
+        </div>
+        <div class="highlights-grid">
+            
+    <a href="#" target="_blank" rel="noopener" class="highlight-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">🧠</div><span class="card-category" style="color:#FF3B30">模型</span></div>
+        <div class="card-body">
+            <h3 class="card-title">OpenAI 发布 GPT-5 预览版，推理能力大幅提升</h3>
+            <p class="card-summary">GPT-5 预览版发布，推理和代码能力大幅提升</p>
+            <div class="card-footer">
+                <span class="card-source">机器之心</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+
+    <a href="#" target="_blank" rel="noopener" class="highlight-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%)">🤖</div><span class="card-category" style="color:#5856D6">Agent</span></div>
+        <div class="card-body">
+            <h3 class="card-title">字节跳动发布 Coze 2.0，Agent 平台再升级</h3>
+            <p class="card-summary">Coze 2.0 发布，新增多智能体协作</p>
+            <div class="card-footer">
+                <span class="card-source">量子位</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+
+    <a href="#" target="_blank" rel="noopener" class="highlight-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">⚡</div><span class="card-category" style="color:#34C759">算力</span></div>
+        <div class="card-body">
+            <h3 class="card-title">英伟达 H200 芯片开始出货，算力成本再降 30%</h3>
+            <p class="card-summary">H200 芯片出货，训练成本降低 30%</p>
+            <div class="card-footer">
+                <span class="card-source">36氪</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">全部资讯</h2>
+            <span class="section-count">6 条</span>
+        </div>
+        <div class="news-grid">
+            
+    <a href="#" target="_blank" rel="noopener" class="news-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">🧠</div><span class="card-category" style="color:#FF3B30">模型</span></div>
+        <div class="card-body">
+            <h3 class="card-title">OpenAI 发布 GPT-5 预览版，推理能力大幅提升</h3>
+            <p class="card-summary">GPT-5 预览版发布，推理和代码能力大幅提升</p>
+            <div class="card-footer">
+                <span class="card-source">机器之心</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+
+    <a href="#" target="_blank" rel="noopener" class="news-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%)">🤖</div><span class="card-category" style="color:#5856D6">Agent</span></div>
+        <div class="card-body">
+            <h3 class="card-title">字节跳动发布 Coze 2.0，Agent 平台再升级</h3>
+            <p class="card-summary">Coze 2.0 发布，新增多智能体协作</p>
+            <div class="card-footer">
+                <span class="card-source">量子位</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+
+    <a href="#" target="_blank" rel="noopener" class="news-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)">⚡</div><span class="card-category" style="color:#34C759">算力</span></div>
+        <div class="card-body">
+            <h3 class="card-title">英伟达 H200 芯片开始出货，算力成本再降 30%</h3>
+            <p class="card-summary">H200 芯片出货，训练成本降低 30%</p>
+            <div class="card-footer">
+                <span class="card-source">36氪</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+
+    <a href="#" target="_blank" rel="noopener" class="news-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #fa709a 0%, #fee140 100%)">🔒</div><span class="card-category" style="color:#FF9500">安全</span></div>
+        <div class="card-body">
+            <h3 class="card-title">中国 AI 监管新规出台，要求大模型备案</h3>
+            <p class="card-summary">AI 监管新规出台，大模型须备案</p>
+            <div class="card-footer">
+                <span class="card-source">机器之心</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+
+    <a href="#" target="_blank" rel="noopener" class="news-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">🧠</div><span class="card-category" style="color:#FF3B30">模型</span></div>
+        <div class="card-body">
+            <h3 class="card-title">Meta 开源 Llama 4，参数量达 400B</h3>
+            <p class="card-summary">Llama 4 开源，400B 参数</p>
+            <div class="card-footer">
+                <span class="card-source">量子位</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+
+    <a href="#" target="_blank" rel="noopener" class="news-card">
+        <div class="card-image"><div class="placeholder" style="background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">💼</div><span class="card-category" style="color:#007AFF">产业</span></div>
+        <div class="card-body">
+            <h3 class="card-title">百度文心一言用户突破 3 亿</h3>
+            <p class="card-summary">文心一言用户破 3 亿</p>
+            <div class="card-footer">
+                <span class="card-source">36氪</span>
+                <span class="card-time">2026-07-31</span>
+            </div>
+        </div>
+    </a>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">每日海报</h2>
         </div>
         
-        <div class="image-card" onclick="openLightbox('./output/2026-07-31/detail.png')">
+        <div class="image-card-lg" onclick="openLightbox('./output/2026-07-31/detail.png')">
             <img src="./output/2026-07-31/detail.png" alt="详细版">
-            <div class="label">
-                <span class="label-text">详细版 · 8 条精选资讯</span>
-                <span class="label-tag">📱 手机全屏</span>
-            </div>
+            <div class="label"><span class="label-text">📱 详细版海报</span></div>
         </div>
-        <div class="image-card" onclick="openLightbox('./output/2026-07-31/highlights.png')">
+        <div class="image-card-lg" onclick="openLightbox('./output/2026-07-31/highlights.png')">
             <img src="./output/2026-07-31/highlights.png" alt="今日看点">
-            <div class="label">
-                <span class="label-text">今日看点 · 3 条重点</span>
-                <span class="label-tag">🎯 精选推荐</span>
-            </div>
+            <div class="label"><span class="label-text">🎯 今日看点海报</span></div>
         </div>
     </section>
-
     
-    <section class="history-section">
-        <div class="empty">
-            <div class="empty-icon">📭</div>
-            <p>暂无历史记录</p>
-        </div>
-    </section>
-
 
     <footer class="footer">
         米桶 AI · 不构成任何建议，仅供信息参考<br>
@@ -429,73 +595,68 @@ heroTl
     .from(".hero-date", {y: 15, opacity: 0}, "-=0.5")
     .from(".section-title", {y: 20, opacity: 0}, "-=0.4");
 
-// Today's cards stagger
-gsap.from(".image-card", {
-    y: 60,
+// Cards stagger entrance
+gsap.from(".news-card, .highlight-card", {
+    y: 50,
     opacity: 0,
-    duration: 0.9,
-    stagger: 0.15,
+    duration: 0.8,
+    stagger: 0.08,
     ease: "power3.out",
-    delay: 0.4
+    delay: 0.3
 });
 
-// History cards scroll trigger
-gsap.utils.toArray(".history-card").forEach((card, i) => {{
-    gsap.to(card, {{
-        scrollTrigger: {{
-            trigger: card,
-            start: "top 88%",
+// History items scroll trigger
+gsap.utils.toArray(".history-item").forEach((item, i) => {
+    gsap.from(item, {
+        scrollTrigger: {
+            trigger: item,
+            start: "top 90%",
             toggleActions: "play none none none",
-        }},
-        y: 0,
-        opacity: 1,
-        duration: 0.7,
-        delay: i * 0.08,
-        ease: "power3.out",
-        onComplete: () => card.classList.add("visible")
-    }});
-}});
+        },
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+        delay: i * 0.05,
+        ease: "power3.out"
+    });
+});
 
+// Image lazy load
+document.querySelectorAll("img[data-src]").forEach(img => {
+    const src = img.dataset.src;
+    if (!src) return;
+    const temp = new Image();
+    temp.onload = () => { img.src = src; img.classList.add("loaded"); };
+    temp.onerror = () => { img.style.display = "none"; };
+    temp.src = src;
+});
 
 // Lightbox
-const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightbox-img");
-
+const lb = document.getElementById("lightbox");
+const lbImg = document.getElementById("lightbox-img");
 function openLightbox(src) {
-    lightboxImg.src = src;
-    lightbox.classList.add("show");
+    lbImg.src = src;
+    lb.classList.add("show");
     document.body.style.overflow = "hidden";
-    requestAnimationFrame(() => lightbox.classList.add("active"));
+    requestAnimationFrame(() => lb.classList.add("active"));
 }
 function closeLightbox(e) {
     if (e.target === e.currentTarget || e.target.classList.contains("close")) {
-        lightbox.classList.remove("active");
-        setTimeout(() => {
-            lightbox.classList.remove("show");
-            lightboxImg.src = "";
-            document.body.style.overflow = "";
-        }, 300);
+        lb.classList.remove("active");
+        setTimeout(() => { lb.classList.remove("show"); lbImg.src = ""; document.body.style.overflow = ""; }, 300);
     }
 }
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && lightbox.classList.contains("show")) {
-        lightbox.classList.remove("active");
-        setTimeout(() => {
-            lightbox.classList.remove("show");
-            lightboxImg.src = "";
-            document.body.style.overflow = "";
-        }, 300);
+    if (e.key === "Escape" && lb.classList.contains("show")) {
+        lb.classList.remove("active");
+        setTimeout(() => { lb.classList.remove("show"); lbImg.src = ""; document.body.style.overflow = ""; }, 300);
     }
 });
 
 // Header blur on scroll
 window.addEventListener("scroll", () => {
-    const header = document.querySelector(".header");
-    if (window.scrollY > 10) {
-        header.style.background = "rgba(255,255,255,0.92)";
-    } else {
-        header.style.background = "rgba(255,255,255,0.72)";
-    }
+    const h = document.querySelector(".header");
+    h.style.background = window.scrollY > 10 ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.72)";
 });
 </script>
 </body>

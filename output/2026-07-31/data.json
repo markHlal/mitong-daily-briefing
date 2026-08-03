@@ -1,0 +1,17 @@
+{
+  "date": "2026.07.31 Fri",
+  "date_key": "2026-07-31",
+  "items": [
+    {"title": "OpenAI 发布 GPT-5 预览版，推理能力大幅提升", "summary": "OpenAI 今日发布了 GPT-5 的预览版本，新模型在数学推理和代码生成方面表现显著优于 GPT-4。", "brief": "GPT-5 预览版发布，推理和代码能力大幅提升", "category": "模型", "category_color": "#FF3B30", "category_id": "model", "source_name": "机器之心", "published_at": "2026-07-31T08:00:00+00:00", "url": "#", "image_url": ""},
+    {"title": "字节跳动发布 Coze 2.0，Agent 平台再升级", "summary": "字节跳动旗下的 AI Agent 开发平台 Coze 发布 2.0 版本，新增多智能体协作和可视化工作流功能。", "brief": "Coze 2.0 发布，新增多智能体协作", "category": "Agent", "category_color": "#5856D6", "category_id": "agent", "source_name": "量子位", "published_at": "2026-07-31T07:30:00+00:00", "url": "#", "image_url": ""},
+    {"title": "英伟达 H200 芯片开始出货，算力成本再降 30%", "summary": "英伟达宣布 H200 GPU 正式出货，内存带宽提升 50%，预计将使大模型训练成本降低约 30%。", "brief": "H200 芯片出货，训练成本降低 30%", "category": "算力", "category_color": "#34C759", "category_id": "compute", "source_name": "36氪", "published_at": "2026-07-31T06:00:00+00:00", "url": "#", "image_url": ""},
+    {"title": "中国 AI 监管新规出台，要求大模型备案", "summary": "国家网信办发布《生成式人工智能服务管理暂行办法》，要求所有面向公众提供服务的生成式 AI 模型须完成备案。", "brief": "AI 监管新规出台，大模型须备案", "category": "安全", "category_color": "#FF9500", "category_id": "security", "source_name": "机器之心", "published_at": "2026-07-31T05:00:00+00:00", "url": "#", "image_url": ""},
+    {"title": "Meta 开源 Llama 4，参数量达 400B", "summary": "Meta 正式发布 Llama 4 系列模型，最大版本参数量达 400B，在多模态任务上表现优异。", "brief": "Llama 4 开源，400B 参数", "category": "模型", "category_color": "#FF3B30", "category_id": "model", "source_name": "量子位", "published_at": "2026-07-31T04:00:00+00:00", "url": "#", "image_url": ""},
+    {"title": "百度文心一言用户突破 3 亿", "summary": "百度宣布文心一言累计用户数突破 3 亿，日活用户超过 5000 万，API 调用量日均 10 亿次。", "brief": "文心一言用户破 3 亿", "category": "产业", "category_color": "#007AFF", "category_id": "industry", "source_name": "36氪", "published_at": "2026-07-31T03:00:00+00:00", "url": "#", "image_url": ""}
+  ],
+  "highlights": [
+    {"title": "OpenAI 发布 GPT-5 预览版，推理能力大幅提升", "summary": "OpenAI 今日发布了 GPT-5 的预览版本，新模型在数学推理和代码生成方面表现显著优于 GPT-4。", "brief": "GPT-5 预览版发布，推理和代码能力大幅提升", "category": "模型", "category_color": "#FF3B30", "category_id": "model", "source_name": "机器之心", "published_at": "2026-07-31T08:00:00+00:00", "url": "#", "image_url": ""},
+    {"title": "字节跳动发布 Coze 2.0，Agent 平台再升级", "summary": "字节跳动旗下的 AI Agent 开发平台 Coze 发布 2.0 版本，新增多智能体协作和可视化工作流功能。", "brief": "Coze 2.0 发布，新增多智能体协作", "category": "Agent", "category_color": "#5856D6", "category_id": "agent", "source_name": "量子位", "published_at": "2026-07-31T07:30:00+00:00", "url": "#", "image_url": ""},
+    {"title": "英伟达 H200 芯片开始出货，算力成本再降 30%", "summary": "英伟达宣布 H200 GPU 正式出货，内存带宽提升 50%，预计将使大模型训练成本降低约 30%。", "brief": "H200 芯片出货，训练成本降低 30%", "category": "算力", "category_color": "#34C759", "category_id": "compute", "source_name": "36氪", "published_at": "2026-07-31T06:00:00+00:00", "url": "#", "image_url": ""}
+  ]
+}

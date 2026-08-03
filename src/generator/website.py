@@ -1,36 +1,59 @@
-"""Generate a static website with GSAP animations and polished Apple-style design."""
+"""Generate a responsive website with card-based news layout and GSAP animations."""
 
+import json
 from pathlib import Path
-from datetime import datetime
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "output"
 WEB_DIR = PROJECT_ROOT / "website"
 
-def get_all_briefings() -> list[dict]:
-    """Scan output directory, merge same-day detail+highlights, return sorted briefings."""
-    from collections import defaultdict
-    merged = defaultdict(lambda: {"detail": False, "highlights": False,
-                                   "detail_path": None, "highlights_path": None})
+# ── Category gradient backgrounds (when no image available) ──
+CAT_GRADIENTS = {
+    "Agent": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    "模型": "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    "产业": "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    "算力": "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    "安全": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    "其他": "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
+}
 
+CAT_ICONS = {
+    "Agent": "🤖",
+    "模型": "🧠",
+    "产业": "💼",
+    "算力": "⚡",
+    "安全": "🔒",
+    "其他": "📰",
+}
+
+
+def get_all_briefings() -> list[dict]:
+    """Scan output directory and return all briefings sorted by date."""
+    briefings = []
     for date_dir in sorted(OUTPUT_DIR.iterdir()):
         if not date_dir.is_dir():
             continue
-        date_key = date_dir.name.split()[0]
-        detail = date_dir / "detail.png"
-        highlights = date_dir / "highlights.png"
-        if detail.exists():
-            merged[date_key]["detail"] = True
-            merged[date_key]["detail_path"] = str(detail.relative_to(PROJECT_ROOT))
-        if highlights.exists():
-            merged[date_key]["highlights"] = True
-            merged[date_key]["highlights_path"] = str(highlights.relative_to(PROJECT_ROOT))
+        data_file = date_dir / "data.json"
+        detail_img = date_dir / "detail.png"
+        highlights_img = date_dir / "highlights.png"
+        if data_file.exists() or detail_img.exists():
+            data = {}
+            if data_file.exists():
+                try:
+                    with open(data_file, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                except Exception:
+                    pass
+            briefings.append({
+                "date": date_dir.name,
+                "date_key": data.get("date_key", date_dir.name),
+                "items": data.get("items", []),
+                "highlights": data.get("highlights", []),
+                "detail_image": str(detail_img.relative_to(PROJECT_ROOT)) if detail_img.exists() else None,
+                "highlights_image": str(highlights_img.relative_to(PROJECT_ROOT)) if highlights_img.exists() else None,
+            })
+    return list(reversed(briefings))
 
-    briefings = []
-    for date_key in sorted(merged.keys(), reverse=True):
-        b = merged[date_key]
-        briefings.append({"date": date_key, **b})
-    return briefings
 
 # ── Shared CSS ──
 CSS = '''<style>
@@ -46,9 +69,9 @@ CSS = '''<style>
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
     --shadow: 0 4px 24px rgba(0,0,0,0.06);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
-    --radius-sm: 16px;
-    --radius: 24px;
-    --radius-lg: 32px;
+    --radius-sm: 12px;
+    --radius: 20px;
+    --radius-lg: 28px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -99,9 +122,9 @@ body {
 
 /* Hero */
 .hero {
-    max-width: 860px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 140px 24px 60px;
+    padding: 130px 24px 40px;
     text-align: center;
 }
 .hero-badge {
@@ -114,7 +137,7 @@ body {
     border-radius: 100px;
     font-size: 14px;
     color: var(--text-secondary);
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     box-shadow: var(--shadow-sm);
 }
 .hero-badge .dot {
@@ -123,39 +146,23 @@ body {
     border-radius: 50%;
     animation: pulse 2s ease-in-out infinite;
 }
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .hero h1 {
-    font-size: 56px;
+    font-size: 48px;
     font-weight: 700;
-    letter-spacing: -1.5px;
+    letter-spacing: -1.2px;
     line-height: 1.1;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     background: linear-gradient(135deg, #1D1D1F 0%, #434344 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
-.hero-sub {
-    font-size: 21px;
-    color: var(--text-secondary);
-    font-weight: 400;
-    margin-bottom: 8px;
-}
-.hero-date {
-    font-size: 15px;
-    color: var(--text-tertiary);
-    font-weight: 500;
-}
+.hero-sub { font-size: 20px; color: var(--text-secondary); font-weight: 400; margin-bottom: 8px; }
+.hero-date { font-size: 15px; color: var(--text-tertiary); font-weight: 500; }
 
 /* Section */
-.section {
-    max-width: 860px;
-    margin: 0 auto 64px;
-    padding: 0 24px;
-}
+.section { max-width: 1100px; margin: 0 auto 64px; padding: 0 24px; }
 .section-header {
     display: flex;
     align-items: center;
@@ -185,144 +192,229 @@ body {
     border: 1px solid var(--border);
 }
 
-/* Image Card */
-.image-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    margin-bottom: 28px;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
-    will-change: transform;
-    cursor: pointer;
-}
-.image-card:hover {
-    transform: translateY(-6px) scale(1.005);
-    box-shadow: var(--shadow-lg);
-}
-.image-card img {
-    width: 100%;
-    display: block;
-    opacity: 1;
-    max-height: 75vh;
-    object-fit: contain;
-    background: #f0f0f2;
-}
-    width: 100%;
-    display: block;
-    opacity: 1;
-}
-.image-card .label {
-    padding: 18px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-    width: 100%;
-    display: block;
-    opacity: 1;
-}
-.image-card .label {
-    width: 100%;
-    display: block;
-    opacity: 1;
-}
-.image-card.animate-in img {
-    opacity: 0;
-    animation: imgFadeIn 0.8s ease forwards;
-}
-@keyframes imgFadeIn {
-    to { opacity: 1; }
-}
-.image-card .label {
-    padding: 18px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.label-text { font-size: 15px; color: var(--text-secondary); font-weight: 500; }
-.label-tag {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 5px 14px;
-    border-radius: 100px;
-    background: var(--blue-light);
-    color: var(--blue);
-    letter-spacing: 0.3px;
-}
-
-/* History */
-.history-section { max-width: 1200px; margin: 0 auto 80px; padding: 0 24px; }
-.history-grid {
+/* ── News Cards Grid ── */
+.news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
 }
-.history-card {
+@media (max-width: 1024px) {
+    .news-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+    .news-grid { grid-template-columns: 1fr; gap: 16px; }
+    .header { padding: 12px 20px; }
+    .hero { padding: 110px 20px 32px; }
+    .hero h1 { font-size: 36px; }
+    .hero-sub { font-size: 18px; }
+    .section { padding: 0 16px; margin-bottom: 48px; }
+}
+
+/* News Card */
+.news-card {
     background: var(--surface);
     border-radius: var(--radius);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
     text-decoration: none;
     color: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     will-change: transform;
-    opacity: 0;
-    transform: translateY(30px);
 }
-.history-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-.history-card:hover {
-    transform: translateY(-4px);
+.news-card:hover {
+    transform: translateY(-5px);
     box-shadow: var(--shadow-lg);
 }
-.history-card .thumb-wrap {
+.card-image {
     position: relative;
-    overflow: hidden;
+    width: 100%;
     aspect-ratio: 16/10;
+    overflow: hidden;
+    background: #E8E8ED;
 }
-.history-card .thumb-wrap img {
+.card-image img {
     width: 100%; height: 100%;
     object-fit: cover;
     display: block;
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.history-card:hover .thumb-wrap img { transform: scale(1.05); }
-.history-card .overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.history-card:hover .overlay { opacity: 1; }
-.history-card .info {
-    padding: 20px 22px;
-}
-.history-card .date {
-    font-size: 17px;
-    font-weight: 600;
-    margin-bottom: 6px;
-    letter-spacing: -0.3px;
-}
-.history-card .meta {
-    font-size: 13px;
-    color: var(--text-tertiary);
+.news-card:hover .card-image img { transform: scale(1.06); }
+.card-image .placeholder {
+    width: 100%; height: 100%;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    font-size: 48px;
 }
+.card-category {
+    position: absolute;
+    top: 12px; left: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(10px);
+    color: var(--text);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+.card-body {
+    padding: 18px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card-summary {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.card-source {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+.card-time {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+/* ── Highlights Section (top 3) ── */
+.highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+@media (max-width: 1024px) {
+    .highlights-grid { grid-template-columns: 1fr; }
+}
+.highlight-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+.highlight-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+.highlight-card .card-image { aspect-ratio: 16/9; }
+.highlight-card .card-body { padding: 22px 24px 24px; }
+.highlight-card .card-title { font-size: 18px; }
+.highlight-card .card-summary { font-size: 14px; -webkit-line-clamp: 4; }
+
+/* ── Old Image Cards (for legacy images) ── */
+.image-card-lg {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+    cursor: pointer;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.image-card-lg:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+.image-card-lg img {
+    width: 100%;
+    display: block;
+    max-height: 70vh;
+    object-fit: contain;
+    background: #f0f0f2;
+}
+.image-card-lg .label {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ── History Section ── */
+.history-section { max-width: 1100px; margin: 0 auto 80px; padding: 0 24px; }
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+@media (max-width: 1024px) {
+    .history-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .history-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .history-grid { grid-template-columns: 1fr; }
+}
+.history-item {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+.history-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+.history-item img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+    display: block;
+}
+.history-item .info { padding: 14px 16px; }
+.history-item .date { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.history-item .meta { font-size: 12px; color: var(--text-tertiary); }
 
 /* Empty */
 .empty {
     text-align: center;
-    padding: 100px 20px;
+    padding: 80px 20px;
     color: var(--text-tertiary);
 }
-.empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.6; }
-.empty p { font-size: 16px; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
 
 /* Lightbox */
 .lightbox {
@@ -344,15 +436,14 @@ body {
     max-height: 90vh;
     border-radius: 16px;
     box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-    transform: scale(0.9);
+    transform: scale(0.92);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .lightbox.active img { transform: scale(1); }
 .lightbox .close {
     position: absolute;
-    top: 20px;
-    right: 28px;
-    font-size: 36px;
+    top: 20px; right: 28px;
+    font-size: 32px;
     color: rgba(255,255,255,0.8);
     cursor: pointer;
     width: 44px; height: 44px;
@@ -361,10 +452,10 @@ body {
     justify-content: center;
     border-radius: 50%;
     background: rgba(255,255,255,0.1);
-    transition: background 0.2s, color 0.2s;
+    transition: all 0.2s;
     z-index: 10;
 }
-.lightbox .close:hover { background: rgba(255,255,255,0.2); color: white; }
+.lightbox .close:hover { background: rgba(255,255,255,0.25); color: white; }
 
 /* Footer */
 .footer {
@@ -373,131 +464,152 @@ body {
     color: var(--text-tertiary);
     font-size: 13px;
     border-top: 1px solid var(--border);
-    margin-top: 40px;
     line-height: 1.8;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .header { padding: 12px 20px; }
-    .hero { padding: 110px 20px 40px; }
-    .hero h1 { font-size: 38px; }
-    .hero-sub { font-size: 18px; }
-    .section { padding: 0 20px; margin-bottom: 48px; }
-    .history-section { padding: 0 20px; }
-    .history-grid { grid-template-columns: 1fr; gap: 16px; }
-    .image-card { border-radius: var(--radius); }
-    .image-card .label { padding: 14px 20px; }
 }
 </style>'''
 
+
 # ── Shared JS ──
-def _js(is_detail: bool = False) -> str:
-    return f'''<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+LIGHTBOX_JS = '''<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
 gsap.registerPlugin(ScrollTrigger);
 
 // Hero entrance
-const heroTl = gsap.timeline({{defaults: {{ease: "power3.out", duration: 0.8}}}});
+const heroTl = gsap.timeline({defaults: {ease: "power3.out", duration: 0.8}});
 heroTl
-    .from(".hero-badge", {{y: 20, opacity: 0, duration: 0.6}})
-    .from(".hero h1", {{y: 40, opacity: 0, duration: 1}}, "-=0.3")
-    .from(".hero-sub", {{y: 20, opacity: 0}}, "-=0.6")
-    .from(".hero-date", {{y: 15, opacity: 0}}, "-=0.5")
-    .from(".section-title", {{y: 20, opacity: 0}}, "-=0.4");
+    .from(".hero-badge", {y: 20, opacity: 0, duration: 0.6})
+    .from(".hero h1", {y: 40, opacity: 0, duration: 1}, "-=0.3")
+    .from(".hero-sub", {y: 20, opacity: 0}, "-=0.6")
+    .from(".hero-date", {y: 15, opacity: 0}, "-=0.5")
+    .from(".section-title", {y: 20, opacity: 0}, "-=0.4");
 
-// Today's cards stagger
-gsap.from(".image-card", {{
-    y: 60,
+// Cards stagger entrance
+gsap.from(".news-card, .highlight-card", {
+    y: 50,
     opacity: 0,
-    duration: 0.9,
-    stagger: 0.15,
+    duration: 0.8,
+    stagger: 0.08,
     ease: "power3.out",
-    delay: 0.4
-}});
+    delay: 0.3
+});
 
-// History cards scroll trigger
-{'' if is_detail else '''gsap.utils.toArray(".history-card").forEach((card, i) => {{
-    gsap.to(card, {{
-        scrollTrigger: {{
-            trigger: card,
-            start: "top 88%",
+// History items scroll trigger
+gsap.utils.toArray(".history-item").forEach((item, i) => {
+    gsap.from(item, {
+        scrollTrigger: {
+            trigger: item,
+            start: "top 90%",
             toggleActions: "play none none none",
-        }},
-        y: 0,
-        opacity: 1,
-        duration: 0.7,
-        delay: i * 0.08,
-        ease: "power3.out",
-        onComplete: () => card.classList.add("visible")
-    }});
-}});'''}
+        },
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+        delay: i * 0.05,
+        ease: "power3.out"
+    });
+});
 
+// Image lazy load
+document.querySelectorAll("img[data-src]").forEach(img => {
+    const src = img.dataset.src;
+    if (!src) return;
+    const temp = new Image();
+    temp.onload = () => { img.src = src; img.classList.add("loaded"); };
+    temp.onerror = () => { img.style.display = "none"; };
+    temp.src = src;
+});
 
 // Lightbox
-const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightbox-img");
-
-function openLightbox(src) {{
-    lightboxImg.src = src;
-    lightbox.classList.add("show");
+const lb = document.getElementById("lightbox");
+const lbImg = document.getElementById("lightbox-img");
+function openLightbox(src) {
+    lbImg.src = src;
+    lb.classList.add("show");
     document.body.style.overflow = "hidden";
-    requestAnimationFrame(() => lightbox.classList.add("active"));
-}}
-function closeLightbox(e) {{
-    if (e.target === e.currentTarget || e.target.classList.contains("close")) {{
-        lightbox.classList.remove("active");
-        setTimeout(() => {{
-            lightbox.classList.remove("show");
-            lightboxImg.src = "";
-            document.body.style.overflow = "";
-        }}, 300);
-    }}
-}}
-document.addEventListener("keydown", (e) => {{
-    if (e.key === "Escape" && lightbox.classList.contains("show")) {{
-        lightbox.classList.remove("active");
-        setTimeout(() => {{
-            lightbox.classList.remove("show");
-            lightboxImg.src = "";
-            document.body.style.overflow = "";
-        }}, 300);
-    }}
-}});
+    requestAnimationFrame(() => lb.classList.add("active"));
+}
+function closeLightbox(e) {
+    if (e.target === e.currentTarget || e.target.classList.contains("close")) {
+        lb.classList.remove("active");
+        setTimeout(() => { lb.classList.remove("show"); lbImg.src = ""; document.body.style.overflow = ""; }, 300);
+    }
+}
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && lb.classList.contains("show")) {
+        lb.classList.remove("active");
+        setTimeout(() => { lb.classList.remove("show"); lbImg.src = ""; document.body.style.overflow = ""; }, 300);
+    }
+});
 
 // Header blur on scroll
-window.addEventListener("scroll", () => {{
-    const header = document.querySelector(".header");
-    if (window.scrollY > 10) {{
-        header.style.background = "rgba(255,255,255,0.92)";
-    }} else {{
-        header.style.background = "rgba(255,255,255,0.72)";
-    }}
-}});
+window.addEventListener("scroll", () => {
+    const h = document.querySelector(".header");
+    h.style.background = window.scrollY > 10 ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.72)";
+});
 </script>'''
 
-# ── Detail page for a specific date ──
+
+def _card_html(item: dict, is_highlight: bool = False) -> str:
+    """Generate a single news card HTML."""
+    url = item.get("url", "#")
+    title = item.get("title", "")
+    summary = item.get("brief") or item.get("summary", "")[:120]
+    if len(summary) > 120:
+        summary = summary[:117] + "..."
+    source = item.get("source_name", "")
+    cat = item.get("category", "其他")
+    cat_color = item.get("category_color", "#8E8E93")
+    image_url = item.get("image_url", "")
+    pub = item.get("published_at", "")[:10]
+
+    card_class = "highlight-card" if is_highlight else "news-card"
+
+    # Image section
+    if image_url:
+        img_html = f'<div class="card-image"><img src="{image_url}" alt="{title}" loading="lazy" onerror="this.style.display=\'none\';this.parentElement.querySelector(\'.placeholder\').style.display=\'flex\'"><div class="placeholder" style="display:none;background:{CAT_GRADIENTS.get(cat, CAT_GRADIENTS['其他'])};position:absolute;inset:0;align-items:center;justify-content:center;font-size:48px;">{CAT_ICONS.get(cat, "📰")}</div><span class="card-category" style="color:{cat_color}">{cat}</span></div>'
+    else:
+        icon = CAT_ICONS.get(cat, "📰")
+        gradient = CAT_GRADIENTS.get(cat, CAT_GRADIENTS["其他"])
+        img_html = f'<div class="card-image"><div class="placeholder" style="background:{gradient}">{icon}</div><span class="card-category" style="color:{cat_color}">{cat}</span></div>'
+
+    return f'''
+    <a href="{url}" target="_blank" rel="noopener" class="{card_class}">
+        {img_html}
+        <div class="card-body">
+            <h3 class="card-title">{title}</h3>
+            <p class="card-summary">{summary}</p>
+            <div class="card-footer">
+                <span class="card-source">{source}</span>
+                <span class="card-time">{pub}</span>
+            </div>
+        </div>
+    </a>'''
+
+
 def _detail_page_html(b: dict) -> str:
+    """Generate detail page for a specific date."""
     date = b["date"]
-    cards = ""
-    if b.get("detail_path"):
-        cards += f'''
-        <div class="image-card" onclick="openLightbox('./{b['detail_path']}')">
-            <img src="./{b['detail_path']}" alt="详细版">
-            <div class="label">
-                <span class="label-text">详细版 · 8 条精选资讯</span>
-                <span class="label-tag">📱 手机全屏</span>
-            </div>
-        </div>'''
-    if b.get("highlights_path"):
-        cards += f'''
-        <div class="image-card" onclick="openLightbox('./{b['highlights_path']}')">
-            <img src="./{b['highlights_path']}" alt="今日看点">
-            <div class="label">
-                <span class="label-text">今日看点 · 3 条重点</span>
-                <span class="label-tag">🎯 精选推荐</span>
-            </div>
+    items = b.get("items", [])
+    highlights = b.get("highlights", items[:3]) if items else []
+
+    # Highlights cards
+    hl_cards = ""
+    if highlights:
+        hl_cards = '\n'.join(_card_html(item, is_highlight=True) for item in highlights)
+
+    # All items cards
+    all_cards = ""
+    if items:
+        all_cards = '\n'.join(_card_html(item) for item in items)
+
+    # Legacy images
+    legacy = ""
+    if b.get("detail_image"):
+        legacy += f'''
+        <div class="image-card-lg" onclick="openLightbox('./{b['detail_image']}')">
+            <img src="./{b['detail_image']}" alt="详细版">
+            <div class="label"><span class="label-text">详细版海报</span></div>
         </div>'''
 
     return f'''<!DOCTYPE html>
@@ -521,12 +633,11 @@ def _detail_page_html(b: dict) -> str:
         <p class="hero-date">📅 {date}</p>
     </section>
 
-    <section class="section">
-        <div class="section-header">
-            <h2 class="section-title">{date} 早报</h2>
-        </div>
-        {cards}
-    </section>
+    {f'<section class="section"><div class="section-header"><h2 class="section-title">今日看点</h2></div><div class="highlights-grid">{hl_cards}</div></section>' if hl_cards else ''}
+
+    {f'<section class="section"><div class="section-header"><h2 class="section-title">全部资讯</h2><span class="section-count">{len(items)} 条</span></div><div class="news-grid">{all_cards}</div></section>' if all_cards else ''}
+
+    {f'<section class="section"><div class="section-header"><h2 class="section-title">历史海报</h2></div>{legacy}</section>' if legacy else ''}
 
     <footer class="footer">
         米桶 AI · 不构成任何建议，仅供信息参考<br>
@@ -538,77 +649,103 @@ def _detail_page_html(b: dict) -> str:
         <img src="" alt="大图" id="lightbox-img">
     </div>
 
-{_js(is_detail=True)}
+{LIGHTBOX_JS}
 </body>
 </html>'''
 
-# ── Home page ──
-def _home_page_html(latest: dict, history: list[dict]) -> str:
-    today_cards = ""
-    if latest.get("detail_path"):
-        today_cards += f'''
-        <div class="image-card" onclick="openLightbox('./{latest['detail_path']}')">
-            <img src="./{latest['detail_path']}" alt="详细版">
-            <div class="label">
-                <span class="label-text">详细版 · 8 条精选资讯</span>
-                <span class="label-tag">📱 手机全屏</span>
-            </div>
-        </div>'''
-    if latest.get("highlights_path"):
-        today_cards += f'''
-        <div class="image-card" onclick="openLightbox('./{latest['highlights_path']}')">
-            <img src="./{latest['highlights_path']}" alt="今日看点">
-            <div class="label">
-                <span class="label-text">今日看点 · 3 条重点</span>
-                <span class="label-tag">🎯 精选推荐</span>
-            </div>
-        </div>'''
 
-    history_html = ""
+def _home_page_html(latest: dict, history: list[dict]) -> str:
+    """Generate home page with latest news and history."""
+    date = latest["date"]
+    items = latest.get("items", [])
+    highlights = latest.get("highlights", items[:3]) if items else []
+
+    # Highlights
+    hl_section = ""
+    if highlights:
+        hl_cards = '\n'.join(_card_html(item, is_highlight=True) for item in highlights)
+        hl_section = f'''
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">今日看点</h2>
+        </div>
+        <div class="highlights-grid">
+            {hl_cards}
+        </div>
+    </section>'''
+
+    # All items
+    all_section = ""
+    if items:
+        all_cards = '\n'.join(_card_html(item) for item in items)
+        all_section = f'''
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">全部资讯</h2>
+            <span class="section-count">{len(items)} 条</span>
+        </div>
+        <div class="news-grid">
+            {all_cards}
+        </div>
+    </section>'''
+
+    # Legacy images
+    legacy_section = ""
+    if latest.get("detail_image") or latest.get("highlights_image"):
+        legacy_cards = ""
+        if latest.get("detail_image"):
+            legacy_cards += f'''
+        <div class="image-card-lg" onclick="openLightbox('./{latest['detail_image']}')">
+            <img src="./{latest['detail_image']}" alt="详细版">
+            <div class="label"><span class="label-text">📱 详细版海报</span></div>
+        </div>'''
+        if latest.get("highlights_image"):
+            legacy_cards += f'''
+        <div class="image-card-lg" onclick="openLightbox('./{latest['highlights_image']}')">
+            <img src="./{latest['highlights_image']}" alt="今日看点">
+            <div class="label"><span class="label-text">🎯 今日看点海报</span></div>
+        </div>'''
+        legacy_section = f'''
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">每日海报</h2>
+        </div>
+        {legacy_cards}
+    </section>'''
+
+    # History
+    hist_section = ""
     if history:
-        history_html += '''
+        hist_items = ""
+        for b in history:
+            thumb = None
+            if b.get("highlights_image"):
+                thumb = b["highlights_image"]
+            elif b.get("detail_image"):
+                thumb = b["detail_image"]
+            elif b.get("items") and b["items"][0].get("image_url"):
+                thumb = b["items"][0]["image_url"]
+
+            date_slug = b["date"].replace(" ", "_").replace(".", "-")
+            img_tag = f'<img src="./{thumb}" alt="{b['date']}" loading="lazy">' if thumb else f'<div style="width:100%;aspect-ratio:16/10;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:32px;">📰</div>'
+            hist_items += f'''
+            <a href="./{date_slug}/" class="history-item">
+                {img_tag}
+                <div class="info">
+                    <div class="date">{b['date']}</div>
+                    <div class="meta">{len(b.get('items', []))} 条资讯</div>
+                </div>
+            </a>'''
+        hist_section = f'''
     <section class="history-section">
         <div class="section-header">
             <h2 class="section-title">历史记录</h2>
-            <span class="section-count">''' + str(len(history)) + ''' 期</span>
+            <span class="section-count">{len(history)} 期</span>
         </div>
         <div class="history-grid">
-'''
-        for b in history:
-            thumb = b.get("highlights_path") or b.get("detail_path")
-            date_slug = b["date"].replace(" ", "_").replace(".", "-")
-            meta_parts = []
-            if b['detail']:
-                meta_parts.append("详细版")
-            if b['highlights']:
-                meta_parts.append("今日看点")
-            meta = " · ".join(meta_parts)
-            if thumb:
-                history_html += f'''
-            <a href="./{date_slug}/" class="history-card">
-                <div class="thumb-wrap">
-                    <img src="./{thumb}" alt="{b['date']}" loading="lazy">
-                    <div class="overlay"></div>
-                </div>
-                <div class="info">
-                    <div class="date">{b['date']}</div>
-                    <div class="meta">📄 {meta}</div>
-                </div>
-            </a>
-'''
-        history_html += '''
+            {hist_items}
         </div>
-    </section>
-'''
-    else:
-        history_html = '''
-    <section class="history-section">
-        <div class="empty">
-            <div class="empty-icon">📭</div>
-            <p>暂无历史记录</p>
-        </div>
-    </section>
-'''
+    </section>'''
 
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
@@ -628,17 +765,13 @@ def _home_page_html(latest: dict, history: list[dict]) -> str:
         <div class="hero-badge"><span class="dot"></span>每日更新</div>
         <h1>AI 早报</h1>
         <p class="hero-sub">每日精选 · 10 秒速览</p>
-        <p class="hero-date">📅 {latest['date']}</p>
+        <p class="hero-date">📅 {date}</p>
     </section>
 
-    <section class="section">
-        <div class="section-header">
-            <h2 class="section-title">今日早报</h2>
-        </div>
-        {today_cards}
-    </section>
-
-    {history_html}
+    {hl_section}
+    {all_section}
+    {legacy_section}
+    {hist_section}
 
     <footer class="footer">
         米桶 AI · 不构成任何建议，仅供信息参考<br>
@@ -650,9 +783,10 @@ def _home_page_html(latest: dict, history: list[dict]) -> str:
         <img src="" alt="大图" id="lightbox-img">
     </div>
 
-{_js(is_detail=False)}
+{LIGHTBOX_JS}
 </body>
 </html>'''
+
 
 def generate_website():
     briefings = get_all_briefings()
@@ -664,7 +798,7 @@ def generate_website():
     latest = briefings[0]
     history = briefings[1:]
 
-    # ── Generate detail pages ──
+    # Generate detail pages
     for b in briefings:
         date_slug = b["date"].replace(" ", "_").replace(".", "-")
         detail_dir = WEB_DIR / date_slug
@@ -672,7 +806,7 @@ def generate_website():
         (detail_dir / "index.html").write_text(_detail_page_html(b), encoding="utf-8")
         print(f"  Detail page: {detail_dir}/index.html")
 
-    # ── Generate home page ──
+    # Generate home page
     home_html = _home_page_html(latest, history)
     (WEB_DIR / "index.html").write_text(home_html, encoding="utf-8")
 
@@ -680,7 +814,9 @@ def generate_website():
     print(f"   Total briefings: {len(briefings)}")
     print(f"   Detail pages: {len(briefings)}")
     print(f"   Latest: {latest['date']}")
+    print(f"   Items: {len(latest.get('items', []))}")
     print(f"   History: {len(history)} days")
+
 
 if __name__ == "__main__":
     generate_website()
