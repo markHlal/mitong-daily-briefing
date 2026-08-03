@@ -174,10 +174,20 @@ body {
 .image-card img {
     width: 100%;
     display: block;
+    opacity: 1;
+}
+.image-card.animate-in img {
+    opacity: 0;
+    animation: imgFadeIn 0.8s ease forwards;
+}
+@keyframes imgFadeIn {
+    to { opacity: 1; }
+}
+    width: 100%;
+    display: block;
     opacity: 0;
     transition: opacity 0.6s ease;
 }
-.image-card img.loaded { opacity: 1; }
 .image-card .label {
     padding: 18px 28px;
     display: flex;
@@ -354,14 +364,14 @@ body {
         </div>
         
         <div class="image-card" onclick="openLightbox('./output/2026-07-31/detail.png')">
-            <img data-src="./output/2026-07-31/detail.png" alt="详细版">
+            <img src="./output/2026-07-31/detail.png" alt="详细版">
             <div class="label">
                 <span class="label-text">详细版 · 8 条精选资讯</span>
                 <span class="label-tag">📱 手机全屏</span>
             </div>
         </div>
         <div class="image-card" onclick="openLightbox('./output/2026-07-31/highlights.png')">
-            <img data-src="./output/2026-07-31/highlights.png" alt="今日看点">
+            <img src="./output/2026-07-31/highlights.png" alt="今日看点">
             <div class="label">
                 <span class="label-text">今日看点 · 3 条重点</span>
                 <span class="label-tag">🎯 精选推荐</span>
@@ -429,23 +439,6 @@ gsap.utils.toArray(".history-card").forEach((card, i) => {{
     }});
 }});
 
-document.querySelectorAll("img[data-src]").forEach(img => {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const src = img.dataset.src;
-                const temp = new Image();
-                temp.onload = () => {
-                    img.src = src;
-                    img.classList.add("loaded");
-                };
-                temp.src = src;
-                observer.unobserve(img);
-            }
-        });
-    }, {rootMargin: "100px"});
-    observer.observe(img);
-});
 
 // Lightbox
 const lightbox = document.getElementById("lightbox");

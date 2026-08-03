@@ -7,7 +7,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "output"
 WEB_DIR = PROJECT_ROOT / "website"
 
-
 def get_all_briefings() -> list[dict]:
     """Scan output directory, merge same-day detail+highlights, return sorted briefings."""
     from collections import defaultdict
@@ -32,7 +31,6 @@ def get_all_briefings() -> list[dict]:
         b = merged[date_key]
         briefings.append({"date": date_key, **b})
     return briefings
-
 
 # ── Shared CSS ──
 CSS = '''<style>
@@ -205,10 +203,20 @@ body {
 .image-card img {
     width: 100%;
     display: block;
+    opacity: 1;
+}
+.image-card.animate-in img {
+    opacity: 0;
+    animation: imgFadeIn 0.8s ease forwards;
+}
+@keyframes imgFadeIn {
+    to { opacity: 1; }
+}
+    width: 100%;
+    display: block;
     opacity: 0;
     transition: opacity 0.6s ease;
 }
-.image-card img.loaded { opacity: 1; }
 .image-card .label {
     padding: 18px 28px;
     display: flex;
@@ -366,7 +374,6 @@ body {
 }
 </style>'''
 
-
 # ── Shared JS ──
 def _js(is_detail: bool = False) -> str:
     return f'''<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -410,23 +417,6 @@ gsap.from(".image-card", {{
     }});
 }});'''}
 
-document.querySelectorAll("img[data-src]").forEach(img => {{
-    const observer = new IntersectionObserver((entries) => {{
-        entries.forEach(entry => {{
-            if (entry.isIntersecting) {{
-                const src = img.dataset.src;
-                const temp = new Image();
-                temp.onload = () => {{
-                    img.src = src;
-                    img.classList.add("loaded");
-                }};
-                temp.src = src;
-                observer.unobserve(img);
-            }}
-        }});
-    }}, {{rootMargin: "100px"}});
-    observer.observe(img);
-}});
 
 // Lightbox
 const lightbox = document.getElementById("lightbox");
@@ -470,7 +460,6 @@ window.addEventListener("scroll", () => {{
 }});
 </script>'''
 
-
 # ── Detail page for a specific date ──
 def _detail_page_html(b: dict) -> str:
     date = b["date"]
@@ -478,7 +467,7 @@ def _detail_page_html(b: dict) -> str:
     if b.get("detail_path"):
         cards += f'''
         <div class="image-card" onclick="openLightbox('./{b['detail_path']}')">
-            <img data-src="./{b['detail_path']}" alt="详细版">
+            <img src="./{b['detail_path']}" alt="详细版">
             <div class="label">
                 <span class="label-text">详细版 · 8 条精选资讯</span>
                 <span class="label-tag">📱 手机全屏</span>
@@ -487,7 +476,7 @@ def _detail_page_html(b: dict) -> str:
     if b.get("highlights_path"):
         cards += f'''
         <div class="image-card" onclick="openLightbox('./{b['highlights_path']}')">
-            <img data-src="./{b['highlights_path']}" alt="今日看点">
+            <img src="./{b['highlights_path']}" alt="今日看点">
             <div class="label">
                 <span class="label-text">今日看点 · 3 条重点</span>
                 <span class="label-tag">🎯 精选推荐</span>
@@ -536,14 +525,13 @@ def _detail_page_html(b: dict) -> str:
 </body>
 </html>'''
 
-
 # ── Home page ──
 def _home_page_html(latest: dict, history: list[dict]) -> str:
     today_cards = ""
     if latest.get("detail_path"):
         today_cards += f'''
         <div class="image-card" onclick="openLightbox('./{latest['detail_path']}')">
-            <img data-src="./{latest['detail_path']}" alt="详细版">
+            <img src="./{latest['detail_path']}" alt="详细版">
             <div class="label">
                 <span class="label-text">详细版 · 8 条精选资讯</span>
                 <span class="label-tag">📱 手机全屏</span>
@@ -552,7 +540,7 @@ def _home_page_html(latest: dict, history: list[dict]) -> str:
     if latest.get("highlights_path"):
         today_cards += f'''
         <div class="image-card" onclick="openLightbox('./{latest['highlights_path']}')">
-            <img data-src="./{latest['highlights_path']}" alt="今日看点">
+            <img src="./{latest['highlights_path']}" alt="今日看点">
             <div class="label">
                 <span class="label-text">今日看点 · 3 条重点</span>
                 <span class="label-tag">🎯 精选推荐</span>
@@ -582,7 +570,7 @@ def _home_page_html(latest: dict, history: list[dict]) -> str:
                 history_html += f'''
             <a href="./{date_slug}/" class="history-card">
                 <div class="thumb-wrap">
-                    <img data-src="./{thumb}" alt="{b['date']}" loading="lazy">
+                    <img src="./{thumb}" alt="{b['date']}" loading="lazy">
                     <div class="overlay"></div>
                 </div>
                 <div class="info">
@@ -649,7 +637,6 @@ def _home_page_html(latest: dict, history: list[dict]) -> str:
 </body>
 </html>'''
 
-
 def generate_website():
     briefings = get_all_briefings()
     if not briefings:
@@ -677,7 +664,6 @@ def generate_website():
     print(f"   Detail pages: {len(briefings)}")
     print(f"   Latest: {latest['date']}")
     print(f"   History: {len(history)} days")
-
 
 if __name__ == "__main__":
     generate_website()
