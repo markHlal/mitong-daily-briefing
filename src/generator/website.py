@@ -303,7 +303,7 @@ def generate_website():
     if latest.get("detail_path"):
         html += f'''
         <div class="image-card">
-            <img src="../{latest['detail_path']}" alt="详细版" onclick="openLightbox(this.src)">
+            <img src="./{latest['detail_path']}" alt="详细版" onclick="openLightbox(this.src)">
             <div class="label">
                 详细版 · 8 条精选资讯
                 <span>📱 手机全屏</span>
@@ -314,7 +314,7 @@ def generate_website():
     if latest.get("highlights_path"):
         html += f'''
         <div class="image-card">
-            <img src="../{latest['highlights_path']}" alt="今日看点" onclick="openLightbox(this.src)">
+            <img src="./{latest['highlights_path']}" alt="今日看点" onclick="openLightbox(this.src)">
             <div class="label">
                 今日看点 · 3 条重点
                 <span>🎯 精选推荐</span>
@@ -337,7 +337,7 @@ def generate_website():
             if thumb:
                 html += f'''
             <a href="#" class="history-item" onclick="showDate('{b['date']}'); return false;">
-                <img src="../{thumb}" alt="{b['date']}">
+                <img src="./{thumb}" alt="{b['date']}">
                 <div class="info">
                     <div class="date">{b['date']}</div>
                     <div class="meta">📄 {'详细版' if b['detail'] else ''} {'·' if b['detail'] and b['highlights'] else ''} {'今日看点' if b['highlights'] else ''}</div>
