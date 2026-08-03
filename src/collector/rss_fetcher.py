@@ -1,7 +1,7 @@
-import hashlib
+"""RSS collector: fetch and normalize news items from configured sources."""
+
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any
 
 import feedparser
 import requests
@@ -11,73 +11,74 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-# Regex to find first image in HTML
+FETCH_TIMEOUT = 15  # seconds; feedparser itself has no timeout
+_UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) MitongDailyBrief/1.0"}
+
+# Regex to find the first image in HTML content (last-resort fallback)
 _IMG_RE = re.compile(r'<img[^>]+src=["\']([^"\']+)["\']', re.IGNORECASE)
 
 
-def _extract_image(html_content: str) -> str | None:
-    """Extract the first image URL from HTML content."""
+def _is_usable_image(url: str) -> bool:
+    """Skip tracking pixels and tiny/beacon images."""
+    if not url:
+        return False
+    low = url.lower()
+    return not (low.endswith(".gif") or "tracking" in low or "pixel" in low or "feedburner" in low)
+
+
+def _extract_media_image(entry) -> str | None:
+    """Extract an image from RSS media fields (media:thumbnail / media:content / enclosure)."""
+    # media:thumbnail — most common for Chinese feeds
+    for thumb in entry.get("media_thumbnail", []) or []:
+        url = thumb.get("url", "")
+        if _is_usable_image(url):
+            return url
+    # media:content
+    for media in entry.get("media_content", []) or []:
+        url = media.get("url", "")
+        mtype = media.get("type", "") or ""
+        if _is_usable_image(url) and (mtype.startswith("image") or media.get("medium") == "image" or not mtype):
+            return url
+    # enclosures with image mime type
+    for enc in entry.get("enclosures", []) or []:
+        url = enc.get("href", "") or enc.get("url", "")
+        if _is_usable_image(url) and enc.get("type", "").startswith("image"):
+            return url
+    return None
+
+
+def _extract_image_from_html(html_content: str) -> str | None:
+    """Extract the first usable <img> from HTML content."""
     if not html_content:
         return None
     match = _IMG_RE.search(html_content)
     if match:
         url = match.group(1).strip()
-        # Skip tracking pixels and tiny images
-        if url and not url.endswith('.gif') and 'tracking' not in url.lower():
+        if _is_usable_image(url):
             return url
     return None
 
 
-def parse_rss(url: str) -> list[dict]:
-    """Parse an RSS feed and return a list of normalized news items."""
-    try:
-        feed = feedparser.parse(url)
-        results = []
-        for entry in feed.entries:
-            published = _parse_time(entry.get("published_parsed") or entry.get("updated_parsed"))
-            if not published:
-                continue
-            # Only keep items from last 48 hours
-            if datetime.now(timezone.utc) - published > timedelta(hours=48):
-                continue
-
-            # Try to get content HTML for image extraction
-            content_html = ""
-            if "content" in entry and entry.content:
-                content_html = entry.content[0].get("value", "")
-            elif "summary" in entry:
-                content_html = entry.summary
-
-            item = {
-                "title": entry.get("title", "").strip(),
-                "url": entry.get("link", "").strip(),
-                "summary": _clean_summary(entry.get("summary", "")),
-                "published_at": published.isoformat(),
-                "source_name": feed.feed.get("title", "未知来源"),
-                "image_url": _extract_image(content_html),
-            }
-            results.append(item)
-        logger.info("Fetched %d items from %s", len(results), url)
-        return results
-    except Exception as e:
-        logger.error("Failed to fetch RSS %s: %s", url, e)
-        return []
-from datetime import datetime, timedelta, timezone
-from typing import Any
-
-import feedparser
-import requests
-
-from utils.config_loader import load_sources
-from utils.logger import get_logger
-
-logger = get_logger(__name__)
+def _entry_image(entry) -> str | None:
+    """Best-effort image for an entry: media fields first, HTML content as fallback."""
+    img = _extract_media_image(entry)
+    if img:
+        return img
+    content_html = ""
+    if entry.get("content"):
+        content_html = entry.content[0].get("value", "")
+    elif entry.get("summary"):
+        content_html = entry.summary
+    return _extract_image_from_html(content_html)
 
 
 def parse_rss(url: str) -> list[dict]:
     """Parse an RSS feed and return a list of normalized news items."""
     try:
-        feed = feedparser.parse(url)
+        # fetch with an explicit timeout first — feedparser.parse(url) can hang forever
+        resp = requests.get(url, headers=_UA, timeout=FETCH_TIMEOUT)
+        resp.raise_for_status()
+        feed = feedparser.parse(resp.content)
         results = []
         for entry in feed.entries:
             published = _parse_time(entry.get("published_parsed") or entry.get("updated_parsed"))
@@ -93,6 +94,7 @@ def parse_rss(url: str) -> list[dict]:
                 "summary": _clean_summary(entry.get("summary", "")),
                 "published_at": published.isoformat(),
                 "source_name": feed.feed.get("title", "未知来源"),
+                "image_url": _entry_image(entry) or "",
             }
             results.append(item)
         logger.info("Fetched %d items from %s", len(results), url)

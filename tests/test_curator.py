@@ -22,15 +22,28 @@ def test_classify_item():
 
 
 def test_score_item():
+    # single-source old story: low score
     item = {"title": "A" * 25, "published_at": "2026-07-31T10:00:00+00:00", "url": "", "summary": "", "source_name": ""}
     score = _score_item(item)
-    assert 5 <= score <= 10
+    assert 1 <= score <= 10
+
+    # cross-platform attention raises the score
+    hot = {**item, "sources_count": 3}
+    assert _score_item(hot) > score
 
 
 def test_classify_and_rank_fallback():
     """When KIMI_API_KEY is not set, fallback to rule-based classification."""
+    # distinct gibberish titles so the attention clustering (correctly)
+    # does not collapse them into one story
     items = [
-        {"title": f"News {i}", "summary": "", "url": f"http://a.com/{i}", "published_at": "2026-07-31T00:00:00+00:00", "source_name": "A"}
+        {
+            "title": "".join(chr(0x4E00 + (i * 31 + k * 97) % 2000) for k in range(8)),
+            "summary": "",
+            "url": f"http://a.com/{i}",
+            "published_at": "2026-07-31T00:00:00+00:00",
+            "source_name": "A",
+        }
         for i in range(20)
     ]
     items[0]["title"] = "OpenAI GPT-5"

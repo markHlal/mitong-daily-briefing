@@ -1,21 +1,46 @@
+# 栏目（资讯类型）— 网站顶部筛选维度
+sections:
+  - id: "ai"
+    name: "AI 资讯"
+  - id: "world"
+    name: "国际时事"
+  - id: "finance"
+    name: "证券资讯"
+
+# 分类 — 每条资讯的细分标签，归属某个栏目
 categories:
   - id: "agent"
     name: "Agent"
-    color: "#007AFF"
+    color: "#5856D6"
     priority: 1
+    section: "ai"
   - id: "model"
     name: "模型"
     color: "#AF52DE"
     priority: 2
+    section: "ai"
   - id: "industry"
     name: "产业"
     color: "#34C759"
     priority: 3
+    section: "ai"
   - id: "compute"
     name: "算力"
     color: "#FF9500"
     priority: 4
+    section: "ai"
   - id: "security"
     name: "安全"
     color: "#FF3B30"
     priority: 5
+    section: "ai"
+  - id: "world"
+    name: "国际"
+    color: "#2E5E4E"
+    priority: 6
+    section: "world"
+  - id: "finance"
+    name: "证券"
+    color: "#96690F"
+    priority: 7
+    section: "finance"

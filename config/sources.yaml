@@ -1,4 +1,5 @@
 sources:
+  # ── AI 资讯 ──
   - name: "机器之心"
     type: rss
     url: "https://www.jiqizhixin.com/rss"
@@ -18,3 +19,20 @@ sources:
     type: rss
     url: "https://techcrunch.com/feed/"
     enabled: false
+
+  # ── 国际时事 ──
+  - name: "BBC 中文"
+    type: rss
+    url: "https://feeds.bbci.co.uk/zhongwen/simp/rss.xml"
+    enabled: true
+
+  - name: "FT 中文网"
+    type: rss
+    url: "http://www.ftchinese.com/rss/news"
+    enabled: true
+
+  # ── 证券资讯 ──
+  - name: "华尔街见闻"
+    type: rss
+    url: "https://dedicated.wallstreetcn.com/rss.xml"
+    enabled: true

@@ -1,0 +1,9 @@
+{
+  "name": "mitong-ai-daily-brief",
+  "private": true,
+  "version": "1.0.0",
+  "description": "米桶 AI 早报 — 静态网站（由 src/generator/website.py 生成，请勿手改 HTML）",
+  "scripts": {
+    "dev": "npx --yes vite --host 0.0.0.0"
+  }
+}

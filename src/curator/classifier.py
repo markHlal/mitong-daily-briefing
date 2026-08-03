@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 import requests
@@ -21,6 +22,12 @@ CATEGORY_KEYWORDS = {
     "industry": ["字节", "腾讯", "阿里", "百度", "微软", "谷歌", "meta", "融资", "收购", "业务", "收入", "arr", "商业化"],
     "compute": ["算力", "芯片", "gpu", "数据中心", "能源", "电力", "h100", "cuda", "infra"],
     "security": ["安全", "监管", "隐私", "合规", "漏洞", "攻击", "风险", "审查", "审核"],
+    "world": ["国际", "美国", "俄罗斯", "乌克兰", "欧洲", "英国", "法国", "德国", "日本", "韩国",
+              "朝鲜", "印度", "中东", "以色列", "伊朗", "联合国", "北约", "关税", "选举", "总统",
+              "外交", "地缘", "冲突", "停火", "制裁", "trump", "ukraine", "gaza"],
+    "finance": ["股", "基金", "债券", "央行", "利率", "降息", "加息", "IPO", "上市", "涨停", "跌停",
+                "沪指", "深成指", "创业板", "纳斯达克", "标普", "道琼斯", "港股", "A股", "美股",
+                "期货", "黄金", "原油", "汇率", "人民币", "美元", "国债", "券商", "牛市", "熊市"],
 }
 
 
@@ -37,31 +44,101 @@ def _classify_item(item: dict) -> str:
     return max(scores, key=scores.get)
 
 
+def _title_bigrams(title: str) -> set:
+    """Character bigrams of a normalized title — works for Chinese (no word segmentation needed)."""
+    t = re.sub(r"[^\w一-鿿]+", "", title.lower())
+    return {t[i:i + 2] for i in range(len(t) - 1)} if len(t) > 1 else set()
+
+
+def _attach_attention(news_list: list[dict]) -> list[dict]:
+    """Cluster items covering the same story across platforms (title bigram Jaccard),
+    and attach `sources_count` = number of DISTINCT sources reporting the story.
+    This is the cross-platform attention signal used for ranking.
+    """
+    n = len(news_list)
+    if n == 0:
+        return news_list
+    tokens = [_title_bigrams(it.get("title", "")) for it in news_list]
+    parent = list(range(n))
+
+    def find(x: int) -> int:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a: int, b: int) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[rb] = ra
+
+    for i in range(n):
+        for j in range(i + 1, n):
+            if not tokens[i] or not tokens[j]:
+                continue
+            inter = len(tokens[i] & tokens[j])
+            if inter == 0:
+                continue
+            jaccard = inter / len(tokens[i] | tokens[j])
+            containment = inter / min(len(tokens[i]), len(tokens[j]))
+            # calibrated on real feeds: catches same-story headlines across
+            # platforms (0.28+ containment) while excluding lookalike pairs
+            if containment >= 0.28 or jaccard >= 0.14:
+                union(i, j)
+
+    clusters: dict[int, list[int]] = {}
+    for i in range(n):
+        clusters.setdefault(find(i), []).append(i)
+    for cid, members in enumerate(clusters.values()):
+        srcs = {news_list[m].get("source_name", "") for m in members}
+        for m in members:
+            news_list[m]["sources_count"] = len(srcs)
+            news_list[m]["cluster_id"] = cid
+    multi = sum(1 for ms in clusters.values() if len({news_list[m].get('source_name', '') for m in ms}) > 1)
+    logger.info("Attention clustering: %d stories covered by multiple sources", multi)
+    return news_list
+
+
+def _best_per_story(items: list[dict]) -> list[dict]:
+    """Collapse each story cluster to its single best representative
+    (highest score, prefer items with an image, then newest)."""
+    best: dict[int, dict] = {}
+    for it in items:
+        cid = it.get("cluster_id", id(it))
+        cur = best.get(cid)
+        key = (it["score"], bool(it.get("image_url")), it.get("published_at", ""))
+        if cur is None or key > (cur["score"], bool(cur.get("image_url")), cur.get("published_at", "")):
+            best[cid] = it
+    return list(best.values())
+
+
 def _score_item(item: dict) -> int:
-    """Score an item by recency + keyword richness."""
-    score = 5
+    """Score an item: cross-platform attention dominates, recency breaks ties."""
+    score = item.get("sources_count", 1) * 3  # 1 source → 3, 2 → 6, 3+ → 9+
     try:
         pub = datetime.fromisoformat(item.get("published_at", ""))
         hours_ago = (datetime.now(timezone.utc) - pub).total_seconds() / 3600
         if hours_ago < 6:
-            score += 3
+            score += 2
         elif hours_ago < 24:
             score += 1
     except Exception:
         pass
-    if len(item.get("title", "")) > 20:
-        score += 1
     return min(score, 10)
 
 
 def _generate_brief(item: dict) -> str:
-    """Generate a one-sentence brief from summary or title."""
+    """One-sentence brief: prefer the first complete sentence of the summary."""
     summary = item.get("summary", "").strip()
     if summary and len(summary) > 10:
-        brief = summary[:60]
-        if len(summary) > 60:
-            brief = brief.rsplit("，", 1)[0] + "..."
-        return brief
+        sentences = [s.strip() for s in re.split(r"(?<=[。！？!?])", summary) if s.strip()]
+        if sentences:
+            first = sentences[0]
+            if 12 <= len(first) <= 60:
+                return first
+            if len(first) > 60:
+                return first[:57].rstrip("，,、；;：: ") + "..."
+        return summary[:60].rstrip("，,、；;：: ") + ("..." if len(summary) > 60 else "")
     return item.get("title", "")[:50] + "..."
 
 
@@ -73,9 +150,10 @@ def _build_prompt(news_list: list[dict]) -> str:
         summary = item.get("summary", "")[:200]
         lines.append(f"[{i}] {title}\n摘要：{summary}")
 
-    prompt = f"""你是一位资深科技编辑。请将以下资讯进行分类并生成一句话解读。
+    cat_names = "、".join(c["name"] for c in load_categories())
+    prompt = f"""你是一位资深新闻编辑。请将以下资讯进行分类并生成一句话解读。
 
-分类选项（严格从以下选择）：Agent、模型、产业、算力、安全
+分类选项（严格从以下选择）：{cat_names}
 
 要求：
 1. 根据标题和摘要判断最相关的分类
@@ -197,18 +275,27 @@ def _rule_classify_all(news_list: list[dict]) -> list[dict]:
 def classify_and_rank(news_list: list[dict], top_n: int = 16) -> list[dict]:
     """Classify, score, and rank news items. Returns top N with category diversity.
 
-    Priority:
+    Ranking is attention-driven: stories covered by more sources rank higher,
+    recency breaks ties. Priority:
     1. Try LLM classification (if KIMI_API_KEY is set)
     2. Fallback to rule-based classification
     """
+    # Cross-platform attention signal must be computed before scoring
+    news_list = _attach_attention(news_list)
+
     # Try LLM first
     enriched = llm_classify(news_list)
     if enriched is None:
         logger.info("Using rule-based classification")
         enriched = _rule_classify_all(news_list)
 
-    # Sort by score desc, then published_at desc
-    enriched.sort(key=lambda x: (-x["score"], x.get("published_at", "")), reverse=False)
+    # Score desc, newest first among ties (stable two-stage sort)
+    enriched.sort(key=lambda x: x.get("published_at", ""), reverse=True)
+    enriched.sort(key=lambda x: x["score"], reverse=True)
+
+    # One representative per story — the briefing shows distinct stories,
+    # ranked by how many platforms covered them
+    enriched = _best_per_story(enriched)
 
     # Category diversity: ensure at least one from each category
     selected = []
@@ -223,7 +310,9 @@ def classify_and_rank(news_list: list[dict], top_n: int = 16) -> list[dict]:
 
     needed = top_n - len(selected)
     selected.extend(remaining[:needed])
-    selected.sort(key=lambda x: (-x["score"], x.get("published_at", "")), reverse=False)
+    # Final order: attention score desc, newest first among ties
+    selected.sort(key=lambda x: x.get("published_at", ""), reverse=True)
+    selected.sort(key=lambda x: x["score"], reverse=True)
 
     logger.info("Curated %d items into top %d", len(news_list), len(selected))
     return selected

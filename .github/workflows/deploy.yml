@@ -52,12 +52,9 @@ jobs:
           PYTHONPATH=src python3 src/main.py || true
 
       - name: Generate website
+        # The generator also copies poster images into website/assets/<date>/
         run: |
           PYTHONPATH=src python3 src/generator/website.py
-
-      - name: Copy output images to website
-        run: |
-          cp -r output website/ 2>/dev/null || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

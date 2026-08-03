@@ -23,6 +23,20 @@ def load_categories() -> list[dict]:
     return cfg.get("categories", [])
 
 
+def load_sections() -> list[dict]:
+    """Top-level news sections (资讯类型), e.g. AI资讯 / 国际时事 / 证券资讯."""
+    cfg = load_config("categories.yaml")
+    return cfg.get("sections", [])
+
+
+def section_of_category(cat_id: str) -> str:
+    """Map a category id to its section id; defaults to 'ai'."""
+    for c in load_categories():
+        if c.get("id") == cat_id:
+            return c.get("section", "ai")
+    return "ai"
+
+
 def load_wechat_config() -> dict:
     cfg = load_config("wechat.yaml")
     wechat = cfg.get("wechat", {})
