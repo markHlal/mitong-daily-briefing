@@ -49,6 +49,15 @@ def generate_highlights_image(news_list: list[dict], date_str: str) -> Image.Ima
     _draw_gradient_bg(draw, W, H)
 
     # ── Fonts ──
+    font_small = get_font(20)
+    font_title = get_font(80)           # Bigger main title
+    font_date = get_font(28)
+    font_cat = get_font(24)
+    font_item_title = get_font(40)      # Bigger card title
+    font_item_desc = get_font(22)
+    font_footer = get_font(26)
+    font_tiny = get_font(18)
+    font_brand = get_font(30)
     font_small = get_font(18)
     font_title = get_font(72)           # Bigger main title
     font_date = get_font(26)
