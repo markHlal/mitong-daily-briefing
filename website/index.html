@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>米桶 AI 早报</title>
+    
     <style>
         :root {
             --bg: #F5F7FA;
@@ -22,12 +23,10 @@
             line-height: 1.6;
             padding-bottom: 60px;
         }
-        
-        /* Header */
         .header {
-            background: var(--card);
+            background: rgba(255,255,255,0.85);
             border-bottom: 1px solid var(--border);
-            padding: 20px 40px;
+            padding: 16px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -35,31 +34,32 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
         .header-brand {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             color: var(--blue);
             text-decoration: none;
         }
-        .header-sub {
-            font-size: 14px;
-            color: var(--text-secondary);
-            margin-left: 8px;
+        .header-sub { font-size: 13px; color: var(--text-secondary); margin-left: 6px; }
+        .header-back {
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        /* Hero Section */
+        .header-back:hover { opacity: 0.7; }
+
         .hero {
             max-width: 900px;
             margin: 40px auto;
             padding: 0 20px;
             text-align: center;
         }
-        .hero h1 {
-            font-size: 48px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
+        .hero h1 { font-size: 44px; font-weight: 700; margin-bottom: 8px; }
         .hero .accent {
             display: inline-block;
             width: 60px;
@@ -68,10 +68,7 @@
             border-radius: 2px;
             margin: 0 auto 16px;
         }
-        .hero p {
-            color: var(--text-secondary);
-            font-size: 18px;
-        }
+        .hero p { color: var(--text-secondary); font-size: 18px; }
         .hero .date {
             display: inline-block;
             background: var(--card);
@@ -82,15 +79,14 @@
             font-size: 16px;
             color: var(--text-secondary);
         }
-        
-        /* Today's Cards */
+
         .today {
             max-width: 900px;
             margin: 0 auto 60px;
             padding: 0 20px;
         }
         .section-title {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 600;
             margin-bottom: 24px;
             display: flex;
@@ -100,11 +96,11 @@
         .section-title::before {
             content: "";
             width: 4px;
-            height: 28px;
+            height: 26px;
             background: var(--blue);
             border-radius: 2px;
         }
-        
+
         .image-card {
             background: var(--card);
             border-radius: 24px;
@@ -136,8 +132,7 @@
             border-radius: 12px;
             font-size: 14px;
         }
-        
-        /* History Grid */
+
         .history {
             max-width: 1200px;
             margin: 0 auto;
@@ -145,7 +140,7 @@
         }
         .history-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
         .history-item {
@@ -170,30 +165,20 @@
         .history-item .info {
             padding: 16px 20px;
         }
-        .history-item .date {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .history-item .meta {
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        
-        /* Lightbox */
+        .history-item .date { font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+        .history-item .meta { font-size: 14px; color: var(--text-secondary); }
+
         .lightbox {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.92);
             z-index: 200;
             justify-content: center;
             align-items: center;
             padding: 40px;
         }
-        .lightbox.active {
-            display: flex;
-        }
+        .lightbox.active { display: flex; }
         .lightbox img {
             max-width: 100%;
             max-height: 90vh;
@@ -209,22 +194,15 @@
             cursor: pointer;
             opacity: 0.8;
         }
-        .lightbox .close:hover {
-            opacity: 1;
-        }
-        
-        /* Empty State */
+        .lightbox .close:hover { opacity: 1; }
+
         .empty {
             text-align: center;
             padding: 80px 20px;
             color: var(--text-secondary);
         }
-        .empty-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-        }
-        
-        /* Footer */
+        .empty-icon { font-size: 64px; margin-bottom: 16px; }
+
         .footer {
             text-align: center;
             padding: 40px;
@@ -233,31 +211,33 @@
             border-top: 1px solid var(--border);
             margin-top: 60px;
         }
-        
+
         @media (max-width: 768px) {
-            .hero h1 { font-size: 36px; }
+            .hero h1 { font-size: 32px; }
             .history-grid { grid-template-columns: 1fr; }
+            .header { padding: 12px 20px; }
         }
     </style>
+
 </head>
 <body>
     <header class="header">
-        <a href="/" class="header-brand">
+        <a href="./" class="header-brand">
             米桶 AI <span class="header-sub">Daily Brief</span>
         </a>
         <span style="color: var(--text-secondary); font-size: 14px;">每日资讯早报</span>
     </header>
-    
+
     <section class="hero">
         <h1>AI 早报</h1>
         <div class="accent"></div>
         <p>每日精选 · 10 秒速览</p>
         <div class="date">📅 2026-07-31 Fri</div>
     </section>
-    
+
     <section class="today">
         <h2 class="section-title">今日早报</h2>
-        
+
         <div class="image-card">
             <img src="./output/2026-07-31 Fri/highlights.png" alt="今日看点" onclick="openLightbox(this.src)">
             <div class="label">
@@ -267,33 +247,33 @@
         </div>
         
     </section>
-    
+
     <section class="history">
         <h2 class="section-title">历史记录</h2>
         <div class="history-grid">
-        
-            <a href="#" class="history-item" onclick="showDate('2026-07-31'); return false;">
-                <img src="./output/2026-07-31/detail.png" alt="2026-07-31">
+
+            <a href="./2026-07-31/" class="history-item">
+                <img src="./output/2026-07-31/detail.png" alt="2026-07-31" loading="lazy">
                 <div class="info">
                     <div class="date">2026-07-31</div>
                     <div class="meta">📄 详细版  </div>
                 </div>
             </a>
-                
+
         </div>
     </section>
-    
+
     <footer class="footer">
         米桶 AI · 不构成任何建议，仅供信息参考<br>
         自动采集自机器之心、量子位、36氪等信源
     </footer>
-    
-    <!-- Lightbox -->
+
     <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
         <span class="close">&times;</span>
         <img src="" alt="大图" id="lightbox-img">
     </div>
-    
+
+
     <script>
         function openLightbox(src) {
             document.getElementById('lightbox-img').src = src;
@@ -306,9 +286,6 @@
                 document.body.style.overflow = '';
             }
         }
-        function showDate(date) {
-            alert('点击查看 ' + date + ' 的详细内容\n（完整历史页面开发中）');
-        }
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 document.getElementById('lightbox').classList.remove('active');
@@ -316,5 +293,6 @@
             }
         });
     </script>
+
 </body>
 </html>

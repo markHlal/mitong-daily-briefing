@@ -1,33 +1,10 @@
-"""Generate a static website with daily detail pages and history grid."""
-
-from pathlib import Path
-from datetime import datetime
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-OUTPUT_DIR = PROJECT_ROOT / "output"
-WEB_DIR = PROJECT_ROOT / "website"
-
-
-def get_all_briefings() -> list[dict]:
-    """Scan output directory and return all briefings sorted by date."""
-    briefings = []
-    for date_dir in sorted(OUTPUT_DIR.iterdir()):
-        if not date_dir.is_dir():
-            continue
-        detail = date_dir / "detail.png"
-        highlights = date_dir / "highlights.png"
-        if detail.exists() or highlights.exists():
-            briefings.append({
-                "date": date_dir.name,
-                "detail": detail.exists(),
-                "highlights": highlights.exists(),
-                "detail_path": str(detail.relative_to(PROJECT_ROOT)) if detail.exists() else None,
-                "highlights_path": str(highlights.relative_to(PROJECT_ROOT)) if highlights.exists() else None,
-            })
-    return list(reversed(briefings))
-
-
-CSS = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-07-31 Fri · 米桶 AI 早报</title>
+    
     <style>
         :root {
             --bg: #F5F7FA;
@@ -241,9 +218,47 @@ CSS = '''
             .header { padding: 12px 20px; }
         }
     </style>
-'''
 
-LIGHTBOX_JS = '''
+</head>
+<body>
+    <header class="header">
+        <a href="./" class="header-brand">
+            米桶 AI <span class="header-sub">Daily Brief</span>
+        </a>
+        <a href="./" class="header-back">← 返回首页</a>
+    </header>
+
+    <section class="hero">
+        <h1>AI 早报</h1>
+        <div class="accent"></div>
+        <p>每日精选 · 10 秒速览</p>
+        <div class="date">📅 2026-07-31 Fri</div>
+    </section>
+
+    <section class="today">
+        <h2 class="section-title">2026-07-31 Fri 早报</h2>
+
+        <div class="image-card">
+            <img src="./output/2026-07-31 Fri/highlights.png" alt="今日看点" onclick="openLightbox(this.src)">
+            <div class="label">
+                今日看点 · 3 条重点
+                <span>🎯 精选推荐</span>
+            </div>
+        </div>
+        
+    </section>
+
+    <footer class="footer">
+        米桶 AI · 不构成任何建议，仅供信息参考<br>
+        自动采集自机器之心、量子位、36氪等信源
+    </footer>
+
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <span class="close">&times;</span>
+        <img src="" alt="大图" id="lightbox-img">
+    </div>
+
+
     <script>
         function openLightbox(src) {
             document.getElementById('lightbox-img').src = src;
@@ -263,204 +278,6 @@ LIGHTBOX_JS = '''
             }
         });
     </script>
-'''
 
-
-def _generate_detail_page(b: dict, is_home: bool = False) -> str:
-    """Generate a detail page for a specific date's briefing."""
-    date = b["date"]
-    html = f'''<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{date} · 米桶 AI 早报</title>
-    {CSS}
-</head>
-<body>
-    <header class="header">
-        <a href="./" class="header-brand">
-            米桶 AI <span class="header-sub">Daily Brief</span>
-        </a>
-        <a href="./" class="header-back">← 返回首页</a>
-    </header>
-
-    <section class="hero">
-        <h1>AI 早报</h1>
-        <div class="accent"></div>
-        <p>每日精选 · 10 秒速览</p>
-        <div class="date">📅 {date}</div>
-    </section>
-
-    <section class="today">
-        <h2 class="section-title">{date} 早报</h2>
-'''
-
-    if b.get("detail_path"):
-        html += f'''
-        <div class="image-card">
-            <img src="./{b['detail_path']}" alt="详细版" onclick="openLightbox(this.src)">
-            <div class="label">
-                详细版 · 8 条精选资讯
-                <span>📱 手机全屏</span>
-            </div>
-        </div>
-        '''
-
-    if b.get("highlights_path"):
-        html += f'''
-        <div class="image-card">
-            <img src="./{b['highlights_path']}" alt="今日看点" onclick="openLightbox(this.src)">
-            <div class="label">
-                今日看点 · 3 条重点
-                <span>🎯 精选推荐</span>
-            </div>
-        </div>
-        '''
-
-    html += '''
-    </section>
-
-    <footer class="footer">
-        米桶 AI · 不构成任何建议，仅供信息参考<br>
-        自动采集自机器之心、量子位、36氪等信源
-    </footer>
-
-    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-        <span class="close">&times;</span>
-        <img src="" alt="大图" id="lightbox-img">
-    </div>
-
-''' + LIGHTBOX_JS + '''
 </body>
 </html>
-'''
-    return html
-
-
-def generate_website():
-    briefings = get_all_briefings()
-    if not briefings:
-        print("No briefings found.")
-        return
-
-    WEB_DIR.mkdir(exist_ok=True)
-    latest = briefings[0]
-    history = briefings[1:]
-
-    # ── Generate detail pages for each date ──
-    for b in briefings:
-        date_slug = b["date"].replace(" ", "_").replace(".", "-")
-        detail_dir = WEB_DIR / date_slug
-        detail_dir.mkdir(exist_ok=True)
-        page_html = _generate_detail_page(b)
-        (detail_dir / "index.html").write_text(page_html, encoding="utf-8")
-        print(f"  Detail page: {detail_dir}/index.html")
-
-    # ── Generate home page ──
-    html = f'''<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>米桶 AI 早报</title>
-    {CSS}
-</head>
-<body>
-    <header class="header">
-        <a href="./" class="header-brand">
-            米桶 AI <span class="header-sub">Daily Brief</span>
-        </a>
-        <span style="color: var(--text-secondary); font-size: 14px;">每日资讯早报</span>
-    </header>
-
-    <section class="hero">
-        <h1>AI 早报</h1>
-        <div class="accent"></div>
-        <p>每日精选 · 10 秒速览</p>
-        <div class="date">📅 {latest['date']}</div>
-    </section>
-
-    <section class="today">
-        <h2 class="section-title">今日早报</h2>
-'''
-
-    if latest.get("detail_path"):
-        html += f'''
-        <div class="image-card">
-            <img src="./{latest['detail_path']}" alt="详细版" onclick="openLightbox(this.src)">
-            <div class="label">
-                详细版 · 8 条精选资讯
-                <span>📱 手机全屏</span>
-            </div>
-        </div>
-        '''
-
-    if latest.get("highlights_path"):
-        html += f'''
-        <div class="image-card">
-            <img src="./{latest['highlights_path']}" alt="今日看点" onclick="openLightbox(this.src)">
-            <div class="label">
-                今日看点 · 3 条重点
-                <span>🎯 精选推荐</span>
-            </div>
-        </div>
-        '''
-
-    html += '''
-    </section>
-'''
-
-    if history:
-        html += '''
-    <section class="history">
-        <h2 class="section-title">历史记录</h2>
-        <div class="history-grid">
-'''
-        for b in history:
-            thumb = b.get("highlights_path") or b.get("detail_path")
-            date_slug = b["date"].replace(" ", "_").replace(".", "-")
-            if thumb:
-                html += f'''
-            <a href="./{date_slug}/" class="history-item">
-                <img src="./{thumb}" alt="{b['date']}" loading="lazy">
-                <div class="info">
-                    <div class="date">{b['date']}</div>
-                    <div class="meta">📄 {'详细版' if b['detail'] else ''} {'·' if b['detail'] and b['highlights'] else ''} {'今日看点' if b['highlights'] else ''}</div>
-                </div>
-            </a>
-'''
-        html += '''
-        </div>
-    </section>
-'''
-
-    html += '''
-    <footer class="footer">
-        米桶 AI · 不构成任何建议，仅供信息参考<br>
-        自动采集自机器之心、量子位、36氪等信源
-    </footer>
-
-    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-        <span class="close">&times;</span>
-        <img src="" alt="大图" id="lightbox-img">
-    </div>
-
-''' + LIGHTBOX_JS + '''
-</body>
-</html>
-'''
-
-    index_path = WEB_DIR / "index.html"
-    with open(index_path, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    print(f"✅ Website generated: {index_path}")
-    print(f"   Total briefings: {len(briefings)}")
-    print(f"   Detail pages: {len(briefings)}")
-    print(f"   Latest: {latest['date']}")
-    print(f"   History: {len(history)} days")
-
-
-if __name__ == "__main__":
-    generate_website()
