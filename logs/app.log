@@ -121,3 +121,12 @@
 2026-07-31 19:36:06 | main | INFO | Step 5: Publishing...
 2026-07-31 19:36:06 | publisher.wechat | INFO | WeChat not configured. Images saved locally.
 2026-07-31 19:36:06 | main | INFO | Pipeline complete: {'status': 'success', 'collected': 40, 'unique': 40, 'curated': 16, 'detail_image': 'output/2026-07-31/detail.png', 'highlights_image': 'output/2026-07-31 Fri/highlights.png', 'published': False}
+2026-08-03 18:50:39 | collector.dedup | INFO | Deduplicated: 3 → 2 items
+2026-08-03 18:50:39 | collector.dedup | INFO | Deduplicated: 3 → 2 items
+2026-08-03 18:50:39 | curator.classifier | WARNING | LLM API request failed: 401 Client Error: Unauthorized for url: https://api.moonshot.cn/v1/chat/completions
+2026-08-03 18:50:39 | curator.classifier | INFO | Using rule-based classification
+2026-08-03 18:50:39 | curator.classifier | INFO | Curated 20 items into top 10
+2026-08-03 18:50:39 | curator.classifier | WARNING | LLM API request failed: 401 Client Error: Unauthorized for url: https://api.moonshot.cn/v1/chat/completions
+2026-08-03 18:50:39 | curator.classifier | INFO | LLM classified 1 items
+2026-08-03 18:50:39 | curator.classifier | INFO | LLM classified 1 items
+2026-08-03 18:50:39 | publisher.wechat | INFO | WeChat not configured. Images saved locally.
