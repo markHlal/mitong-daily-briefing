@@ -9,6 +9,33 @@ WEB_DIR = PROJECT_ROOT / "website"
 
 
 def get_all_briefings() -> list[dict]:
+    """Scan output directory, merge same-day detail+highlights, return sorted briefings."""
+    from collections import defaultdict
+    merged = defaultdict(lambda: {"detail": False, "highlights": False,
+                                   "detail_path": None, "highlights_path": None})
+
+    for date_dir in sorted(OUTPUT_DIR.iterdir()):
+        if not date_dir.is_dir():
+            continue
+        # Normalize date key: "2026-08-03 Mon" -> "2026-08-03"
+        date_key = date_dir.name.split()[0]
+        detail = date_dir / "detail.png"
+        highlights = date_dir / "highlights.png"
+        if detail.exists():
+            merged[date_key]["detail"] = True
+            merged[date_key]["detail_path"] = str(detail.relative_to(PROJECT_ROOT))
+        if highlights.exists():
+            merged[date_key]["highlights"] = True
+            merged[date_key]["highlights_path"] = str(highlights.relative_to(PROJECT_ROOT))
+
+    briefings = []
+    for date_key in sorted(merged.keys(), reverse=True):
+        b = merged[date_key]
+        briefings.append({
+            "date": date_key,
+            **b,
+        })
+    return briefings
     """Scan output directory and return all briefings sorted by date."""
     briefings = []
     for date_dir in sorted(OUTPUT_DIR.iterdir()):
