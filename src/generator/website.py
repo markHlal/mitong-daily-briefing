@@ -93,6 +93,7 @@ def get_all_briefings() -> list[dict]:
             "issue_no": _issue_no(date_dir.name),
             "items": data.get("items", []),
             "highlights": data.get("highlights", []),
+            "trends": data.get("trends", []),
         })
     return list(reversed(briefings))
 
@@ -496,6 +497,65 @@ a.brief:hover h4 { color: var(--verm); }
     letter-spacing: 0.24em;
 }
 
+/* ── US trends ranking (美国热点 TOP 10) ── */
+.trend-list { border-top: 1px solid var(--ink); }
+.trend-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: baseline;
+    padding: 17px 2px;
+    border-bottom: 1px solid var(--rule-soft);
+    text-decoration: none;
+    color: inherit;
+}
+.trend-rank {
+    font-family: var(--serif);
+    font-size: 25px;
+    font-weight: 900;
+    color: var(--verm);
+    min-width: 2ch;
+    font-variant-numeric: oldstyle-nums;
+}
+.trend-topic {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--verm);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.trend-title {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.45;
+    transition: color 0.25s;
+}
+a.trend-row:hover .trend-title { color: var(--verm); }
+.trend-summary {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-top: 4px;
+    max-width: 60em;
+}
+.trend-side { text-align: right; display: grid; gap: 4px; justify-items: end; }
+.trend-traffic {
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    border: 1px solid var(--ink);
+    padding: 2px 10px 1px;
+}
+.trend-source {
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
 /* ── News columns (newspaper column-rule) ── */
 .news-columns {
     columns: 3;
@@ -627,6 +687,8 @@ a.news-item:hover .more { opacity: 1; }
     .frontpage { padding: 104px 20px 0; }
     .section { padding: 36px 20px 4px; }
     .news-columns { columns: 1; }
+    .trend-row { grid-template-columns: auto 1fr; gap: 14px; }
+    .trend-side { display: none; }
     .briefs { grid-template-columns: 1fr; }
     .brief + .brief { border-left: 0; border-top: 1px solid var(--rule); padding-left: 0; }
     .brief:first-child { padding-right: 0; }
@@ -753,6 +815,14 @@ PAGE_JS = '''<script>
                 { y: 0, opacity: 1, stagger: 0.05, duration: 0.55, overwrite: true }),
         });
     }
+    if (document.querySelector(".trend-row")) {
+        ScrollTrigger.batch(".trend-row", {
+            start: "top 94%",
+            onEnter: (els) => gsap.fromTo(els,
+                { x: -18, opacity: 0 },
+                { x: 0, opacity: 1, stagger: 0.06, duration: 0.5, overwrite: true }),
+        });
+    }
     if (document.querySelector(".archive-row")) {
         ScrollTrigger.batch(".archive-row", {
             start: "top 94%",
@@ -865,6 +935,45 @@ def _highlights_section(highlights: list[dict]) -> str:
     </section>'''
 
 
+def _trends_section(trends: list[dict]) -> str:
+    """美国每日热点 TOP 10 — ranked list from Google Trends (geo=US)."""
+    if not trends:
+        return ""
+    rows = ""
+    for t in trends:
+        topic = _esc(t.get("topic", ""))
+        title = _esc(t.get("title", topic))
+        url = t.get("url", "")
+        tag, attrs = ("a", f'href="{_esc(url)}" target="_blank" rel="noopener"') if _valid_url(url) else ("div", "")
+        traffic = t.get("traffic", "")
+        side = ""
+        if traffic or t.get("source"):
+            badge = f'<span class="trend-traffic">{_esc(traffic)} 次搜索</span>' if traffic else ""
+            src = f'<span class="trend-source">{_esc(t.get("source", ""))}</span>' if t.get("source") else ""
+            side = f'<div class="trend-side">{badge}{src}</div>'
+        summary = _esc(t.get("summary", ""))
+        sum_html = f'<div class="trend-summary">{summary}</div>' if summary else ""
+        rows += f'''
+        <{tag} {attrs} class="trend-row">
+            <span class="trend-rank">{t.get("rank", 0):02d}</span>
+            <div>
+                <div class="trend-topic">{topic}</div>
+                <div class="trend-title">{title}</div>
+                {sum_html}
+            </div>
+            {side}
+        </{tag}>'''
+    return f'''
+    <section class="section">
+        <div class="section-head">
+            <h2 class="section-title"><span class="no">贰</span>美国热点 · TOP {len(trends)}</h2>
+            <span class="section-note">Trending in the US</span>
+        </div>
+        <div class="trend-list">{rows}
+        </div>
+    </section>'''
+
+
 def _news_section(items: list[dict]) -> str:
     if not items:
         return ""
@@ -879,7 +988,7 @@ def _news_section(items: list[dict]) -> str:
     return f'''
     <section class="section">
         <div class="section-head">
-            <h2 class="section-title"><span class="no">贰</span>全部资讯</h2>
+            <h2 class="section-title"><span class="no">叁</span>全部资讯</h2>
             <span class="section-note">{len(items)} 条 · All Stories</span>
         </div>
         <div class="tabs" id="news-tabs">
@@ -907,7 +1016,7 @@ def _archive_section(history: list[dict]) -> str:
     return f'''
     <section class="section">
         <div class="section-head">
-            <h2 class="section-title"><span class="no">叁</span>往期存档</h2>
+            <h2 class="section-title"><span class="no">肆</span>往期存档</h2>
             <span class="section-note">{len(history)} 期 · Archive</span>
         </div>
         {rows}
@@ -986,6 +1095,7 @@ def _detail_page_html(b: dict) -> str:
     {_masthead("../", '<a href="../">← 返回首页</a>')}
     {_frontpage(b["date_cn"], b["issue_no"])}
     {_highlights_section(highlights)}
+    {_trends_section(b.get("trends", []))}
     {_news_section(items)}
     {'' if items else '<div class="empty">当日暂无资讯记录</div>'}'''
     return _page_shell(f"{b['date'][:10]} · 米桶 AI 早报", body, prefix="../")
@@ -998,6 +1108,7 @@ def _home_page_html(latest: dict, history: list[dict]) -> str:
     {_masthead("./", latest["date_cn"])}
     {_frontpage(latest["date_cn"], latest["issue_no"])}
     {_highlights_section(highlights)}
+    {_trends_section(latest.get("trends", []))}
     {_news_section(items)}
     {_archive_section(history)}
     {'' if items else '<div class="empty">暂无资讯，敬请期待</div>'}'''

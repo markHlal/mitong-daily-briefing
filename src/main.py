@@ -9,6 +9,7 @@ from pathlib import Path
 
 from collector.rss_fetcher import fetch_all_sources
 from collector.dedup import deduplicate
+from collector.trends import fetch_us_trends
 from curator.classifier import classify_and_rank
 from generator.detail_card import save_detail_image
 from generator.highlights_card import save_highlights_image
@@ -47,12 +48,17 @@ def run(date_str: str | None = None) -> dict:
     data_dir = Path("output") / date_part
     data_dir.mkdir(parents=True, exist_ok=True)
     data_path = data_dir / "data.json"
+
+    # Bonus section: US daily top trending topics (non-fatal on failure)
+    trends = fetch_us_trends(limit=10)
+
     with open(data_path, "w", encoding="utf-8") as f:
         json.dump({
             "date": date_str,
             "date_key": date_part,
             "items": curated,
             "highlights": curated[:3],
+            "trends": trends,
         }, f, ensure_ascii=False, indent=2)
     logger.info("Saved data to %s", data_path)
 
