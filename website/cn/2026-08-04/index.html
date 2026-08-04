@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="../icon.jpg" type="image/jpeg">
+    <link rel="icon" href="../../icon.jpg" type="image/jpeg">
     <title>2026-08-04 · 米桶 AI 早报</title>
     <style>
 :root {
@@ -104,6 +104,23 @@ body::before {
     transition: border-color 0.25s;
 }
 .masthead-meta a:hover { border-color: var(--verm); }
+.nav-global {
+    display: inline-block;
+    margin-right: 16px;
+    padding: 3px 12px 4px;
+    border: 1px solid var(--verm);
+    border-radius: 999px;
+    color: var(--verm) !important;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-decoration: none;
+    transition: background 0.25s, color 0.25s;
+}
+.nav-global:hover {
+    background: var(--verm);
+    color: var(--paper) !important;
+    border-color: var(--verm) !important;
+}
 
 /* ── Front page hero ── */
 .frontpage {
@@ -609,13 +626,13 @@ a.news-item:hover .more { opacity: 1; }
     
     <header class="masthead">
         <div class="masthead-inner">
-            <a href="../" class="brand">
+            <a href="../../" class="brand">
                 <span class="brand-text">
                     <span class="brand-name">AI 早报</span>
-                    <span class="brand-sub"><img src="../icon.jpg" alt="米桶">米桶</span>
+                    <span class="brand-sub"><img src="../../icon.jpg" alt="米桶">米桶</span>
                 </span>
             </a>
-            <span class="masthead-meta"><a href="../">← 返回首页</a></span>
+            <span class="masthead-meta"><a class="nav-global" href="../../">全球态势</a><a href="../../">← 返回首页</a></span>
         </div>
     </header>
     
