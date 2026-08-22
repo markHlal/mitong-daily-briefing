@@ -104,24 +104,6 @@ body::before {
     transition: border-color 0.25s;
 }
 .masthead-meta a:hover { border-color: var(--verm); }
-.nav-global {
-    display: inline-block;
-    margin-right: 16px;
-    padding: 3px 12px 4px;
-    border: 1px solid var(--verm);
-    border-radius: 999px;
-    color: var(--verm) !important;
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-decoration: none;
-    transition: background 0.25s, color 0.25s;
-}
-.nav-global:hover {
-    background: var(--verm);
-    color: var(--paper) !important;
-    border-color: var(--verm) !important;
-}
-
 /* ── Front page hero ── */
 .frontpage {
     max-width: 1080px;
@@ -420,65 +402,6 @@ a.brief:hover h4 { color: var(--verm); }
     letter-spacing: 0.24em;
 }
 
-/* ── US trends ranking (美国热点 TOP 10) ── */
-.trend-list { border-top: 1px solid var(--ink); }
-.trend-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 24px;
-    align-items: baseline;
-    padding: 17px 2px;
-    border-bottom: 1px solid var(--rule-soft);
-    text-decoration: none;
-    color: inherit;
-}
-.trend-rank {
-    font-family: var(--serif);
-    font-size: 25px;
-    font-weight: 900;
-    color: var(--verm);
-    min-width: 2ch;
-    font-variant-numeric: oldstyle-nums;
-}
-.trend-topic {
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--verm);
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-.trend-title {
-    font-family: var(--serif);
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 1.45;
-    transition: color 0.25s;
-}
-a.trend-row:hover .trend-title { color: var(--verm); }
-.trend-summary {
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    line-height: 1.6;
-    margin-top: 4px;
-    max-width: 60em;
-}
-.trend-side { text-align: right; display: grid; gap: 4px; justify-items: end; }
-.trend-traffic {
-    font-size: 12px;
-    color: var(--ink);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    border: 1px solid var(--ink);
-    padding: 2px 10px 1px;
-}
-.trend-source {
-    font-size: 11px;
-    color: var(--ink-faint);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-
 /* ── News columns (newspaper column-rule) ── */
 .news-columns {
     columns: 3;
@@ -610,8 +533,6 @@ a.news-item:hover .more { opacity: 1; }
     .frontpage { padding: 104px 20px 0; }
     .section { padding: 36px 20px 4px; }
     .news-columns { columns: 1; }
-    .trend-row { grid-template-columns: auto 1fr; gap: 14px; }
-    .trend-side { display: none; }
     .briefs { grid-template-columns: 1fr; }
     .brief + .brief { border-left: 0; border-top: 1px solid var(--rule); padding-left: 0; }
     .brief:first-child { padding-right: 0; }
@@ -632,7 +553,7 @@ a.news-item:hover .more { opacity: 1; }
                     <span class="brand-sub"><img src="../../icon.jpg" alt="米桶">米桶</span>
                 </span>
             </a>
-            <span class="masthead-meta"><a class="nav-global" href="../../">全球态势</a><a href="../../">← 返回首页</a></span>
+            <span class="masthead-meta"><a href="../../">← 返回首页</a></span>
         </div>
     </header>
     
@@ -688,105 +609,6 @@ a.news-item:hover .more { opacity: 1; }
             <div class="byline"><span>36氪</span><span>2026-08-04</span><span class="heat">◆ 2 家报道</span></div>
         </div>
     </a></div>
-    </section>
-    
-    <section class="section">
-        <div class="section-head">
-            <h2 class="section-title"><span class="no">贰</span>美国热点 · TOP 10</h2>
-            <span class="section-note">Trending in the US</span>
-        </div>
-        <div class="trend-list">
-        <a href="https://www.cbssports.com/wnba/gametracker/recap/WNBA_20260801_LVA@CHI/" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">01</span>
-            <div>
-                <div class="trend-topic">sydney taylor</div>
-                <div class="trend-title">Las Vegas Aces vs. Chicago Sky Live Score and Stats - August 1, 2026 Gametracker</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">1000+ 次搜索</span><span class="trend-source">CBS Sports</span></div>
-        </a>
-        <a href="https://www.fightful.com/wrestling/la-knight-on-his-successes-at-summerslam-over-the-years-it-seems-like-summertime-is-the-time-of-la-knight/" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">02</span>
-            <div>
-                <div class="trend-topic">jacob fatu</div>
-                <div class="trend-title">LA Knight On His Successes At SummerSlam Over The Years: It Seems Like Summertime Is The Time Of LA Knight</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">Fightful</span></div>
-        </a>
-        <a href="https://www.rotowire.com/baseball/headlines/blaze-jordan-news-out-of-lineup-friday-1017394" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">03</span>
-            <div>
-                <div class="trend-topic">blaze jordan</div>
-                <div class="trend-title">Blaze Jordan News: Out of lineup Friday</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">RotoWire</span></div>
-        </a>
-        <a href="https://heavy.com/sports/mlb/atlanta-braves/set-cut-7-year-mlb-veteran-jorge-mateo-activate-ha-seong-kim/" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">04</span>
-            <div>
-                <div class="trend-topic">dansby swanson</div>
-                <div class="trend-title">Atlanta Braves Set to Cut 7-Year MLB Veteran To Activate Ha-Seong Kim</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">Heavy.com</span></div>
-        </a>
-        <a href="https://www.fightful.com/wrestling/la-knight-on-his-successes-at-summerslam-over-the-years-it-seems-like-summertime-is-the-time-of-la-knight/" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">05</span>
-            <div>
-                <div class="trend-topic">royce keys</div>
-                <div class="trend-title">LA Knight On His Successes At SummerSlam Over The Years: It Seems Like Summertime Is The Time Of LA Knight</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">Fightful</span></div>
-        </a>
-        <a href="https://www.nbcsports.com/fantasy/baseball/player-news/2026-08-03/bubba-chandler-goes-5-2-3-in-win-over-brewers" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">06</span>
-            <div>
-                <div class="trend-topic">mason montgomery</div>
-                <div class="trend-title">Bubba Chandler goes 5 2/3 in win over Brewers</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">1000+ 次搜索</span><span class="trend-source">NBC Sports</span></div>
-        </a>
-        <a href="https://collider.com/glen-powell-chad-powers-season-2-release-date-hulu-september-3-2026/" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">07</span>
-            <div>
-                <div class="trend-topic">glen powell</div>
-                <div class="trend-title">Hulu's 'Ted Lasso' Replacement Officially Sets 2026 Release Date</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">Collider</span></div>
-        </a>
-        <a href="https://evrimagaci.org/gpt/dodgers-turn-to-henriquez-for-bullpen-opener-against-red-sox-543439" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">08</span>
-            <div>
-                <div class="trend-topic">edgardo henriquez</div>
-                <div class="trend-title">Dodgers Turn To Henriquez For Bullpen Opener Against Red Sox</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">Evrim Ağacı</span></div>
-        </a>
-        <a href="https://www.nbcsports.com/fantasy/baseball/player-news/2026-08-02/jose-caballero-hits-two-run-shot-in-victory" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">09</span>
-            <div>
-                <div class="trend-topic">jose caballero</div>
-                <div class="trend-title">Jose Caballero hits two-run shot in victory</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">NBC Sports</span></div>
-        </a>
-        <a href="https://411mania.com/wrestling/oba-femi-bron-breakker-staredown-promo-wwe-raw-8-3-26/" target="_blank" rel="noopener" class="trend-row">
-            <span class="trend-rank">10</span>
-            <div>
-                <div class="trend-topic">bron breakker</div>
-                <div class="trend-title">Oba Femi &amp; Bron Breakker Have Staredown Following Femi Promo Segment On WWE Raw</div>
-                
-            </div>
-            <div class="trend-side"><span class="trend-traffic">500+ 次搜索</span><span class="trend-source">411Mania.</span></div>
-        </a>
-        </div>
     </section>
     
     <section class="section">
@@ -1034,14 +856,6 @@ a.news-item:hover .more { opacity: 1; }
             onEnter: (els) => gsap.fromTo(els,
                 { y: 24, opacity: 0 },
                 { y: 0, opacity: 1, stagger: 0.05, duration: 0.55, overwrite: true }),
-        });
-    }
-    if (document.querySelector(".trend-row")) {
-        ScrollTrigger.batch(".trend-row", {
-            start: "top 94%",
-            onEnter: (els) => gsap.fromTo(els,
-                { x: -18, opacity: 0 },
-                { x: 0, opacity: 1, stagger: 0.06, duration: 0.5, overwrite: true }),
         });
     }
     if (document.querySelector(".archive-row")) {

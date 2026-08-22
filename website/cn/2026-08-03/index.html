@@ -104,24 +104,6 @@ body::before {
     transition: border-color 0.25s;
 }
 .masthead-meta a:hover { border-color: var(--verm); }
-.nav-global {
-    display: inline-block;
-    margin-right: 16px;
-    padding: 3px 12px 4px;
-    border: 1px solid var(--verm);
-    border-radius: 999px;
-    color: var(--verm) !important;
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-decoration: none;
-    transition: background 0.25s, color 0.25s;
-}
-.nav-global:hover {
-    background: var(--verm);
-    color: var(--paper) !important;
-    border-color: var(--verm) !important;
-}
-
 /* ── Front page hero ── */
 .frontpage {
     max-width: 1080px;
@@ -420,65 +402,6 @@ a.brief:hover h4 { color: var(--verm); }
     letter-spacing: 0.24em;
 }
 
-/* ── US trends ranking (美国热点 TOP 10) ── */
-.trend-list { border-top: 1px solid var(--ink); }
-.trend-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 24px;
-    align-items: baseline;
-    padding: 17px 2px;
-    border-bottom: 1px solid var(--rule-soft);
-    text-decoration: none;
-    color: inherit;
-}
-.trend-rank {
-    font-family: var(--serif);
-    font-size: 25px;
-    font-weight: 900;
-    color: var(--verm);
-    min-width: 2ch;
-    font-variant-numeric: oldstyle-nums;
-}
-.trend-topic {
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--verm);
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-.trend-title {
-    font-family: var(--serif);
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 1.45;
-    transition: color 0.25s;
-}
-a.trend-row:hover .trend-title { color: var(--verm); }
-.trend-summary {
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    line-height: 1.6;
-    margin-top: 4px;
-    max-width: 60em;
-}
-.trend-side { text-align: right; display: grid; gap: 4px; justify-items: end; }
-.trend-traffic {
-    font-size: 12px;
-    color: var(--ink);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    border: 1px solid var(--ink);
-    padding: 2px 10px 1px;
-}
-.trend-source {
-    font-size: 11px;
-    color: var(--ink-faint);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-
 /* ── News columns (newspaper column-rule) ── */
 .news-columns {
     columns: 3;
@@ -610,8 +533,6 @@ a.news-item:hover .more { opacity: 1; }
     .frontpage { padding: 104px 20px 0; }
     .section { padding: 36px 20px 4px; }
     .news-columns { columns: 1; }
-    .trend-row { grid-template-columns: auto 1fr; gap: 14px; }
-    .trend-side { display: none; }
     .briefs { grid-template-columns: 1fr; }
     .brief + .brief { border-left: 0; border-top: 1px solid var(--rule); padding-left: 0; }
     .brief:first-child { padding-right: 0; }
@@ -632,7 +553,7 @@ a.news-item:hover .more { opacity: 1; }
                     <span class="brand-sub"><img src="../../icon.jpg" alt="米桶">米桶</span>
                 </span>
             </a>
-            <span class="masthead-meta"><a class="nav-global" href="../../">全球态势</a><a href="../../">← 返回首页</a></span>
+            <span class="masthead-meta"><a href="../../">← 返回首页</a></span>
         </div>
     </header>
     
@@ -934,14 +855,6 @@ a.news-item:hover .more { opacity: 1; }
             onEnter: (els) => gsap.fromTo(els,
                 { y: 24, opacity: 0 },
                 { y: 0, opacity: 1, stagger: 0.05, duration: 0.55, overwrite: true }),
-        });
-    }
-    if (document.querySelector(".trend-row")) {
-        ScrollTrigger.batch(".trend-row", {
-            start: "top 94%",
-            onEnter: (els) => gsap.fromTo(els,
-                { x: -18, opacity: 0 },
-                { x: 0, opacity: 1, stagger: 0.06, duration: 0.5, overwrite: true }),
         });
     }
     if (document.querySelector(".archive-row")) {

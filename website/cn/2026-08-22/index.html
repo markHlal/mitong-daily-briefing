@@ -1,104 +1,11 @@
-"""Generate the 米桶 AI 早报 website — letterpress morning-gazette edition.
-
-Design language: a printed Chinese morning newspaper.
-  · Cream paper, ink black, a single vermilion accent (朱砂).
-  · Song/serif headlines with tight leading, oldstyle numerals.
-  · Hairline rules and newspaper column-rules instead of cards.
-  · Direction-aware masthead (hides on scroll down, returns on scroll up).
-  · Lead story and numbered briefs carry RSS images when available,
-    with a light sepia tone for a printed-photograph feel.
-  · Section tabs filter the news columns by 资讯类型.
-  · No external JS/CSS dependencies — everything works offline.
-"""
-
-import json
-import re
-from datetime import datetime
-from pathlib import Path
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-OUTPUT_DIR = PROJECT_ROOT / "output"
-WEB_DIR = PROJECT_ROOT / "website" / "cn"
-
-WEEKDAYS_CN = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
-
-# ── News sections (资讯类型栏目) ──
-try:
-    from utils.config_loader import load_sections, section_of_category
-    SECTIONS = [(s["id"], s["name"]) for s in load_sections()]
-    if not SECTIONS:
-        raise ValueError("no sections configured")
-except Exception:  # fallback when utils is not importable
-    SECTIONS = [("ai", "AI 资讯"), ("world", "国际时事"), ("finance", "证券资讯")]
-
-    def section_of_category(cat_id: str) -> str:
-        return {"world": "world", "finance": "finance"}.get(cat_id, "ai")
-
-
-# ───────────────────────── helpers ─────────────────────────
-
-def _slug(date: str) -> str:
-    """Filesystem-safe slug for a briefing date."""
-    return date.replace(" ", "_").replace(".", "-")
-
-
-def _esc(text) -> str:
-    s = str(text or "")
-    return (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-             .replace('"', "&quot;"))
-
-
-def _fmt_date(date: str) -> str:
-    """'2026-07-31' -> '2026年7月31日 星期五' (falls back to raw string)."""
-    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", date)
-    if not m:
-        return date
-    try:
-        dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-        return f"{dt.year}年{dt.month}月{dt.day}日 {WEEKDAYS_CN[dt.weekday()]}"
-    except ValueError:
-        return date
-
-
-def _issue_no(date: str) -> str:
-    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", date)
-    return f"NO.{m.group(1)}{m.group(2)}{m.group(3)}" if m else ""
-
-
-def _valid_url(url: str) -> bool:
-    return bool(url) and url != "#" and url.startswith(("http://", "https://"))
-
-
-def get_all_briefings() -> list[dict]:
-    """Scan output directory and return all briefings sorted by date (newest first)."""
-    briefings = []
-    if not OUTPUT_DIR.exists():
-        return briefings
-    for date_dir in sorted(OUTPUT_DIR.iterdir()):
-        if not date_dir.is_dir():
-            continue
-        data_file = date_dir / "data.json"
-        if not data_file.exists():
-            continue
-        data = {}
-        try:
-            with open(data_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except Exception:
-            pass
-        briefings.append({
-            "date": date_dir.name,
-            "slug": _slug(date_dir.name),
-            "date_cn": _fmt_date(date_dir.name),
-            "issue_no": _issue_no(date_dir.name),
-            "items": data.get("items", []),
-            "highlights": data.get("highlights", []),
-        })
-    return list(reversed(briefings))
-
-
-# ───────────────────────── shared CSS ─────────────────────────
-CSS = '''<style>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../../icon.jpg" type="image/jpeg">
+    <title>2026-08-22 · 米桶 AI 早报</title>
+    <style>
 :root {
     --paper: #F6F1E7;
     --paper-deep: #EDE5D4;
@@ -633,14 +540,219 @@ a.news-item:hover .more { opacity: 1; }
     .archive-row { grid-template-columns: 1fr auto; row-gap: 4px; }
     .archive-row .a-week { display: none; }
 }
-</style>'''
+</style>
+</head>
+<body>
+
+    
+    <header class="masthead">
+        <div class="masthead-inner">
+            <a href="../../" class="brand">
+                <span class="brand-text">
+                    <span class="brand-name">AI 早报</span>
+                    <span class="brand-sub"><img src="../../icon.jpg" alt="米桶">米桶</span>
+                </span>
+            </a>
+            <span class="masthead-meta"><a href="../../">← 返回首页</a></span>
+        </div>
+    </header>
+    
+    <section class="frontpage">
+        <div class="dateline">
+            <span>2026年8月22日 星期六</span>
+            <span class="live">每日更新中</span>
+            <span>NO.20260822</span>
+        </div>
+        <div class="nameplate">
+            <div class="seal">米桶</div>
+            <h1><span class="ch-wrap"><span class="ch">A</span></span><span class="ch-wrap"><span class="ch">I</span></span><span class="ch-gap"></span><span class="ch-wrap"><span class="ch">早</span></span><span class="ch-wrap"><span class="ch">报</span></span></h1>
+            <div class="latin">Mitong AI Daily Briefing</div>
+            <div class="motto">每日精选 · 十秒速览</div>
+        </div>
+        <hr class="double-rule">
+    </section>
+    
+    <section class="section">
+        <div class="section-head">
+            <h2 class="section-title"><span class="no">壹</span>今日看点</h2>
+            <span class="section-note">Front Page</span>
+        </div>
+        
+    <a href="https://wallstreetcn.com/articles/3780034" target="_blank" rel="noopener" class="lead">
+        <div class="lead-text">
+            <span class="kicker">头条 · 证券</span>
+            <h3>从“AI股神”抄底的“带血筹码”，Citadel已卖掉80%！</h3>
+            <p>城堡投资（Citadel）创始人Ken Griffin向客户披露，公司已大幅削减从对冲基金Situational...</p>
+            <div class="byline"><span>华尔街见闻</span><span>2026-08-22</span></div>
+        </div>
+        
+    </a>
+        <div class="briefs">
+    <a href="https://wallstreetcn.com/articles/3780041" target="_blank" rel="noopener" class="brief">
+        <span class="num">02</span>
+        <div>
+            <img class="thumb" src="https://wpimg-wscn.awtmt.com/65ddb41b-9b13-4d9f-87cb-58872304aa41.png" alt="贝森特没救成美债却点燃“美元贬值交易”！黄金创三个月新高，比特币单周暴涨超25%" loading="lazy" onerror="this.remove()">
+            <span class="kicker">证券</span>
+            <h4>贝森特没救成美债却点燃“美元贬值交易”！黄金创三个月新高，比特币单周暴涨超25%</h4>
+            <p>美国财政部长贝森特压制长端美债收益率的努力，对市场的直接影响仅维持了不到一天。</p>
+            <div class="byline"><span>华尔街见闻</span><span>2026-08-22</span></div>
+        </div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780043" target="_blank" rel="noopener" class="brief">
+        <span class="num">03</span>
+        <div>
+            <img class="thumb" src="https://wdl-wscn.awtmt.com/2ed0c8c8-fb82-499d-b81c-3fd1de114eae" alt="华尔街见闻早餐FM-Radio | 2026年8月22日" loading="lazy" onerror="this.remove()">
+            <span class="kicker">证券</span>
+            <h4>华尔街见闻早餐FM-Radio | 2026年8月22日</h4>
+            <p>华见早安之声
 
 
-# ───────────────────────── shared JS ─────────────────────────
-GSAP_CDN = '''<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>'''
+市场概述
+尽管美债收益率再度上涨、但对冲基金加速转向金融、医疗与能源板块，叠加美国财政部长债回购...</p>
+            <div class="byline"><span>华尔街见闻</span><span>2026-08-21</span></div>
+        </div>
+    </a></div>
+    </section>
+    
+    <section class="section">
+        <div class="section-head">
+            <h2 class="section-title"><span class="no">叁</span>全部资讯</h2>
+            <span class="section-note">16 条 · All Stories</span>
+        </div>
+        <div class="tabs" id="news-tabs">
+            <button class="tab active" data-sec="all">全部<span class="n">16</span></button><button class="tab" data-sec="ai">AI 资讯<span class="n">5</span></button><button class="tab" data-sec="world">国际时事<span class="n">1</span></button><button class="tab" data-sec="finance">证券资讯<span class="n">10</span></button>
+        </div>
+        <div class="news-columns" id="news-columns">
+            
+    <a href="https://wallstreetcn.com/articles/3780034" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">01</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>从“AI股神”抄底的“带血筹码”，Citadel已卖掉80%！</h4>
+        <p>城堡投资（Citadel）创始人Ken Griffin向客户披露，公司已大幅削减从对冲基金Situational...</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-22</span><span class="more">阅读原文 →</span></div>
+    </a>
 
-PAGE_JS = '''<script>
+    <a href="https://wallstreetcn.com/articles/3780041" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">02</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>贝森特没救成美债却点燃“美元贬值交易”！黄金创三个月新高，比特币单周暴涨超25%</h4>
+        <p>美国财政部长贝森特压制长端美债收益率的努力，对市场的直接影响仅维持了不到一天。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-22</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780043" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">03</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>华尔街见闻早餐FM-Radio | 2026年8月22日</h4>
+        <p>华见早安之声
+
+
+市场概述
+尽管美债收益率再度上涨、但对冲基金加速转向金融、医疗与能源板块，叠加美国财政部长债回购...</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3779986" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">04</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>美股止跌反弹，道指涨近1%，数字货币再猛涨，黄金升破4600</h4>
+        <p>尽管美债收益率再度上涨、但对冲基金加速转向金融、医疗与能源板块，叠加美国财政部长债回购加码的预期与消费韧性支撑，风...</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780042" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">05</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>报道：Anthropic招股书或把美国公众对AI的抵制情绪列为风险因素</h4>
+        <p>Anthropic正准备登陆公开市场，但当前越来越多的美国人对人工智能感到担忧，并强烈反对新建数据中心。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780040" target="_blank" rel="noopener" class="news-item" data-section="ai">
+        <div class="row"><span class="idx">06</span><span class="tag" style="color:#FF3B30">安全</span></div>
+        <h4>英伟达拟斥资60亿美元获Poolside AI模型授权，另投10亿美元并吸纳百余名员工</h4>
+        <p>英伟达正以一种规避传统并购审查的方式，持续向人工智能行业注入巨量资金。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780038" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">07</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>美债扩大回购宣布前，资产管理公司增持5年期和10年期期货多头</h4>
+        <p>据美国商品期货交易委员会（CFTC）数据，在美国财政部意外宣布扩大长期美债回购规模之前，资产管理公司已增加部分美国...</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780036" target="_blank" rel="noopener" class="news-item" data-section="ai">
+        <div class="row"><span class="idx">08</span><span class="tag" style="color:#34C759">产业</span></div>
+        <h4>房利美12名高管突遭解雇，美国房贷市场稳定性担忧升温</h4>
+        <p>美国住房抵押贷款市场核心机构房利美（Fannie Mae）本周经历高层动荡，约12名高级管理人员遭到解雇，引发业界...</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780035" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">09</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>报道：博通的债务交易预计将达到700亿美元以上</h4>
+        <p>博通正寻求迄今规模最大的AI基础设施融资之一，凸显科技行业为支撑人工智能扩张而对资本市场的空前依赖。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780033" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">10</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>瑞士央行官员：必要时将重启负利率，AI短期或推高通胀</h4>
+        <p>瑞士央行政策委员会成员表示，若有必要，瑞士央行将再度将利率降至零以下，以维持通胀在目标区间内。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780029" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">11</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>摩根大通：AI债务发行激增，数据中心相关债券的利差持续走阔</h4>
+        <p>数据中心相关债务市场正面临新的定价压力。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780027" target="_blank" rel="noopener" class="news-item" data-section="world">
+        <div class="row"><span class="idx">12</span><span class="tag" style="color:#2E5E4E">国际</span></div>
+        <h4>美加贸易谈判最后冲刺，加媒称协议拟设钢铁配额、配额内关税降至25%</h4>
+        <p>美加贸易谈判进入最后冲刺阶段，一项潜在协议的关键细节正在浮出水面。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780024" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">13</span><span class="tag" style="color:#96690F">证券</span></div>
+        <h4>锌价创四年新高，现货升水扩至年内最大，市场供需矛盾加剧</h4>
+        <p>汇丰银行全球大宗商品团队周四发出警告，当前锌市场正出现供应极度紧缺的信号。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780018" target="_blank" rel="noopener" class="news-item" data-section="ai">
+        <div class="row"><span class="idx">14</span><span class="tag" style="color:#FF9500">算力</span></div>
+        <h4>算力护城河向“上游”蔓延，英伟达拟数亿美元投资电力开发商Cloverleaf，破解AI基建终极瓶颈</h4>
+        <p>英伟达正将触角延伸至数据中心电力开发的最前端。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://www.qbitai.com/2026/08/476733.html" target="_blank" rel="noopener" class="news-item" data-section="ai">
+        <div class="row"><span class="idx">15</span><span class="tag" style="color:#5856D6">Agent</span></div>
+        <h4>明略科技携手海康机器人亮相世界机器人大会，以“Agent+具身”联合进入商业机器人场景</h4>
+        <p>明略科技（2718.HK）与海康机器人联合参展2026WRC，聚焦商业服务领域展示具身智能落地进展。</p>
+        <div class="meta"><span>量子位 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780000" target="_blank" rel="noopener" class="news-item" data-section="ai">
+        <div class="row"><span class="idx">16</span><span class="tag" style="color:#AF52DE">模型</span></div>
+        <h4>DeepSeek发布实验性视觉理解模型，多模态Agent能力逼近Opus-4.8</h4>
+        <p>DeepSeek加速布局多模态。</p>
+        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+    </a>
+        </div>
+        <div class="tab-empty" id="news-empty" hidden>本栏目今日暂无资讯</div>
+    </section>
+    
+
+    <footer class="footer">
+        <span class="zh">米桶 AI 早报 · 仅供信息参考，不构成任何建议</span>
+        <span>Sources · 机器之心 / 量子位 / 36氪 / BBC / FT / 华尔街见闻</span>
+    </footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
 // Direction-aware masthead: hide on scroll down, return on scroll up (vanilla, always on).
 (function () {
     const mh = document.querySelector(".masthead");
@@ -761,274 +873,6 @@ PAGE_JS = '''<script>
         });
     }
 })();
-</script>'''
-
-
-# ───────────────────────── HTML builders ─────────────────────────
-
-def _item_parts(item: dict) -> dict:
-    title = _esc(item.get("title", ""))
-    summary = item.get("brief") or item.get("summary", "")
-    summary = _esc(summary[:120] + ("..." if len(summary) > 120 else ""))
-    return {
-        "url": item.get("url", ""),
-        "title": title,
-        "summary": summary,
-        "source": _esc(item.get("source_name", "")),
-        "cat": _esc(item.get("category", "其他")),
-        "cat_color": item.get("category_color", "#93876F"),
-        "pub": _esc(item.get("published_at", "")[:10]),
-        "image": item.get("image_url", ""),
-        "heat": item.get("sources_count", 1),
-        "linked": _valid_url(item.get("url", "")),
-    }
-
-
-def _heat_html(p: dict) -> str:
-    """Cross-platform attention badge: only shown when 2+ sources covered the story."""
-    if p["heat"] > 1:
-        return f'<span class="heat">◆ {p["heat"]} 家报道</span>'
-    return ""
-
-
-def _news_item_html(item: dict, idx: int) -> str:
-    """One story in the news columns. Renders as <a> only when a real URL exists."""
-    p = _item_parts(item)
-    sec = section_of_category(item.get("category_id", ""))
-    tag, attrs = ("a", f'href="{_esc(p["url"])}" target="_blank" rel="noopener"') if p["linked"] else ("article", "")
-    more = '<span class="more">阅读原文 →</span>' if p["linked"] else ""
-    return f'''
-    <{tag} {attrs} class="news-item" data-section="{sec}">
-        <div class="row"><span class="idx">{idx:02d}</span><span class="tag" style="color:{p['cat_color']}">{p['cat']}</span></div>
-        <h4>{p['title']}</h4>
-        <p>{p['summary']}</p>
-        <div class="meta"><span>{p['source']} · {p['pub']}</span>{_heat_html(p)}{more}</div>
-    </{tag}>'''
-
-
-def _lead_html(item: dict) -> str:
-    """The front-page lead story (头条), with photograph when the feed provides one."""
-    p = _item_parts(item)
-    tag, attrs = ("a", f'href="{_esc(p["url"])}" target="_blank" rel="noopener"') if p["linked"] else ("article", "")
-    fig = ""
-    if p["image"]:
-        fig = (f'<figure><img src="{_esc(p["image"])}" alt="{p["title"]}" loading="lazy" '
-               f'onerror="this.parentElement.remove()"></figure>')
-    return f'''
-    <{tag} {attrs} class="lead">
-        <div class="lead-text">
-            <span class="kicker">头条 · {p['cat']}</span>
-            <h3>{p['title']}</h3>
-            <p>{p['summary']}</p>
-            <div class="byline"><span>{p['source']}</span><span>{p['pub']}</span>{_heat_html(p)}</div>
-        </div>
-        {fig}
-    </{tag}>'''
-
-
-def _brief_html(item: dict, num: int) -> str:
-    """A numbered sub-highlight (贰条 / 叁条), with a thumbnail when available."""
-    p = _item_parts(item)
-    tag, attrs = ("a", f'href="{_esc(p["url"])}" target="_blank" rel="noopener"') if p["linked"] else ("article", "")
-    thumb = ""
-    if p["image"]:
-        thumb = (f'<img class="thumb" src="{_esc(p["image"])}" alt="{p["title"]}" loading="lazy" '
-                 f'onerror="this.remove()">')
-    return f'''
-    <{tag} {attrs} class="brief">
-        <span class="num">{num:02d}</span>
-        <div>
-            {thumb}
-            <span class="kicker">{p['cat']}</span>
-            <h4>{p['title']}</h4>
-            <p>{p['summary']}</p>
-            <div class="byline"><span>{p['source']}</span><span>{p['pub']}</span>{_heat_html(p)}</div>
-        </div>
-    </{tag}>'''
-
-
-def _highlights_section(highlights: list[dict]) -> str:
-    if not highlights:
-        return ""
-    lead = _lead_html(highlights[0])
-    briefs = '\n'.join(_brief_html(it, i + 2) for i, it in enumerate(highlights[1:3]))
-    briefs_html = f'<div class="briefs">{briefs}</div>' if briefs else ""
-    return f'''
-    <section class="section">
-        <div class="section-head">
-            <h2 class="section-title"><span class="no">壹</span>今日看点</h2>
-            <span class="section-note">Front Page</span>
-        </div>
-        {lead}
-        {briefs_html}
-    </section>'''
-
-
-
-def _news_section(items: list[dict]) -> str:
-    if not items:
-        return ""
-    counts = {}
-    for it in items:
-        sec = section_of_category(it.get("category_id", ""))
-        counts[sec] = counts.get(sec, 0) + 1
-    tabs = [f'<button class="tab active" data-sec="all">全部<span class="n">{len(items)}</span></button>']
-    for sec_id, sec_name in SECTIONS:
-        tabs.append(f'<button class="tab" data-sec="{sec_id}">{sec_name}<span class="n">{counts.get(sec_id, 0)}</span></button>')
-    cards = '\n'.join(_news_item_html(it, i + 1) for i, it in enumerate(items))
-    return f'''
-    <section class="section">
-        <div class="section-head">
-            <h2 class="section-title"><span class="no">叁</span>全部资讯</h2>
-            <span class="section-note">{len(items)} 条 · All Stories</span>
-        </div>
-        <div class="tabs" id="news-tabs">
-            {''.join(tabs)}
-        </div>
-        <div class="news-columns" id="news-columns">
-            {cards}
-        </div>
-        <div class="tab-empty" id="news-empty" hidden>本栏目今日暂无资讯</div>
-    </section>'''
-
-
-def _archive_section(history: list[dict]) -> str:
-    if not history:
-        return ""
-    rows = ""
-    for b in history:
-        rows += f'''
-        <a href="./{b['slug']}/" class="archive-row">
-            <span class="a-date">{_esc(b['date'][:10])}</span>
-            <span class="a-week">{_esc(b['date_cn'].split(' ')[-1])}</span>
-            <span class="a-count">{len(b.get('items', []))} 条资讯</span>
-            <span class="a-arrow">→</span>
-        </a>'''
-    return f'''
-    <section class="section">
-        <div class="section-head">
-            <h2 class="section-title"><span class="no">肆</span>往期存档</h2>
-            <span class="section-note">{len(history)} 期 · Archive</span>
-        </div>
-        {rows}
-    </section>'''
-
-
-def _masthead(home_href: str, right_html: str) -> str:
-    return f'''
-    <header class="masthead">
-        <div class="masthead-inner">
-            <a href="{home_href}" class="brand">
-                <span class="brand-text">
-                    <span class="brand-name">AI 早报</span>
-                    <span class="brand-sub"><img src="{home_href}icon.jpg" alt="米桶">米桶</span>
-                </span>
-            </a>
-            <span class="masthead-meta">{right_html}</span>
-        </div>
-    </header>'''
-
-
-def _frontpage(date_cn: str, issue_no: str) -> str:
-    # split the nameplate into per-character spans for the GSAP stagger
-    chars = ""
-    for c in "AI 早报":
-        if c == " ":
-            chars += '<span class="ch-gap"></span>'
-        else:
-            chars += f'<span class="ch-wrap"><span class="ch">{c}</span></span>'
-    return f'''
-    <section class="frontpage">
-        <div class="dateline">
-            <span>{date_cn}</span>
-            <span class="live">每日更新中</span>
-            <span>{issue_no}</span>
-        </div>
-        <div class="nameplate">
-            <div class="seal">米桶</div>
-            <h1>{chars}</h1>
-            <div class="latin">Mitong AI Daily Briefing</div>
-            <div class="motto">每日精选 · 十秒速览</div>
-        </div>
-        <hr class="double-rule">
-    </section>'''
-
-
-def _page_shell(title: str, body: str, prefix: str = "./") -> str:
-    return f'''<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{prefix}icon.jpg" type="image/jpeg">
-    <title>{title}</title>
-    {CSS}
-</head>
-<body>
-{body}
-
-    <footer class="footer">
-        <span class="zh">米桶 AI 早报 · 仅供信息参考，不构成任何建议</span>
-        <span>Sources · 机器之心 / 量子位 / 36氪 / BBC / FT / 华尔街见闻</span>
-    </footer>
-
-{GSAP_CDN}
-{PAGE_JS}
+</script>
 </body>
-</html>'''
-
-
-def _detail_page_html(b: dict) -> str:
-    """Archive page for one date, at website/cn/<slug>/index.html."""
-    items = b.get("items", [])
-    highlights = b.get("highlights") or items[:3]
-    body = f'''
-    {_masthead("../../", '<a href="../../">← 返回首页</a>')}
-    {_frontpage(b["date_cn"], b["issue_no"])}
-    {_highlights_section(highlights)}
-    {_news_section(items)}
-    {'' if items else '<div class="empty">当日暂无资讯记录</div>'}'''
-    return _page_shell(f"{b['date'][:10]} · 米桶 AI 早报", body, prefix="../../")
-
-
-def _home_page_html(latest: dict, history: list[dict]) -> str:
-    items = latest.get("items", [])
-    highlights = latest.get("highlights") or items[:3]
-    body = f'''
-    {_masthead("./", latest["date_cn"])}
-    {_frontpage(latest["date_cn"], latest["issue_no"])}
-    {_highlights_section(highlights)}
-    {_news_section(items)}
-    {_archive_section(history)}
-    {'' if items else '<div class="empty">暂无资讯，敬请期待</div>'}'''
-    return _page_shell("米桶 AI 早报", body)
-
-
-# ───────────────────────── entry point ─────────────────────────
-
-def generate_website():
-    briefings = get_all_briefings()
-    if not briefings:
-        print("No briefings found.")
-        return
-
-    WEB_DIR.mkdir(parents=True, exist_ok=True)
-
-    # Detail (archive) pages
-    for b in briefings:
-        detail_dir = WEB_DIR / b["slug"]
-        detail_dir.mkdir(exist_ok=True)
-        (detail_dir / "index.html").write_text(_detail_page_html(b), encoding="utf-8")
-        print(f"  Archive page: {detail_dir}/index.html")
-
-    # Home page
-    latest = briefings[0]
-    (WEB_DIR / "index.html").write_text(
-        _home_page_html(latest, briefings[1:]), encoding="utf-8")
-
-    print(f"✅ Website generated: {WEB_DIR}/index.html")
-    print(f"   Briefings: {len(briefings)} · Latest: {latest['date']} · Items: {len(latest.get('items', []))}")
-
-
-if __name__ == "__main__":
-    generate_website()
+</html>
