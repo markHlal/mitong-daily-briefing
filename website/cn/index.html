@@ -7,775 +7,419 @@
     <title>米桶 AI 早报</title>
     <style>
 :root {
-    --paper: #F6F1E7;
-    --paper-deep: #EDE5D4;
-    --ink: #1B1611;
-    --ink-soft: #57503F;
-    --ink-faint: #93876F;
-    --verm: #C2341B;
-    --verm-deep: #9E2A15;
-    --rule: rgba(27, 22, 17, 0.18);
-    --rule-soft: rgba(27, 22, 17, 0.09);
-    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", Georgia, serif;
-    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
-    --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
+    --bg: #F5F5F7;
+    --card: #FFFFFF;
+    --text: #1D1D1F;
+    --text-2: #6E6E73;
+    --text-3: #86868B;
+    --accent: #0071E3;
+    --accent-2: #5E5CE6;
+    --hairline: rgba(0, 0, 0, 0.08);
+    --hairline-soft: rgba(0, 0, 0, 0.05);
+    --seg: #E8E8ED;
+    --radius: 20px;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+            "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
     font-family: var(--sans);
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--bg);
+    color: var(--text);
     line-height: 1.6;
-    font-variant-numeric: oldstyle-nums;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-/* paper grain */
-body::before {
-    content: "";
-    position: fixed; inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0.05;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-::selection { background: var(--verm); color: var(--paper); }
+a { color: inherit; }
+::selection { background: rgba(0, 113, 227, 0.18); }
+:focus-visible { outline: 3px solid rgba(0, 113, 227, 0.5); outline-offset: 2px; border-radius: 6px; }
 
-/* ── Masthead ── */
-.masthead {
-    position: fixed; top: 0; left: 0; right: 0;
-    z-index: 100;
-    background: var(--paper);
-    border-bottom: 1px solid var(--rule);
-    transition: transform 0.45s var(--ease-out);
+/* ── Top bar (frosted glass) ── */
+.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(245, 245, 247, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--hairline-soft);
 }
-.masthead.hidden { transform: translateY(-101%); }
-.masthead-inner {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 13px 28px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
+.topbar-inner {
+    max-width: 960px; margin: 0 auto;
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
-.brand {
-    text-decoration: none;
-    color: var(--ink);
-    display: flex;
-    align-items: center;
-}
-.brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-}
-.brand-name {
-    font-family: var(--serif);
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-}
-.brand-sub {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10.5px;
-    letter-spacing: 0.3em;
-    color: var(--ink-faint);
-}
-.brand-sub img {
-    width: 13px;
-    height: 13px;
-    object-fit: contain;
-    border-radius: 3px;
-}
-.masthead-meta {
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-}
-.masthead-meta a {
-    color: var(--verm);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.25s;
-}
-.masthead-meta a:hover { border-color: var(--verm); }
-/* ── Front page hero ── */
-.frontpage {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 118px 28px 0;
-    position: relative;
-    z-index: 2;
-}
-.dateline {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--rule);
-    padding: 9px 2px;
-    font-size: 12.5px;
-    letter-spacing: 0.12em;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-}
-.dateline .live::before {
-    content: "";
-    display: inline-block;
-    width: 6px; height: 6px;
-    background: var(--verm);
-    border-radius: 50%;
-    margin-right: 7px;
-    vertical-align: 1px;
-    animation: beat 2.4s ease-in-out infinite;
-}
-@keyframes beat { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-.nameplate {
-    text-align: center;
-    padding: 34px 0 26px;
-    position: relative;
-}
-.nameplate h1 {
-    font-family: var(--serif);
-    font-size: clamp(38px, 5.6vw, 64px);
-    font-weight: 900;
-    line-height: 1.1;
-    letter-spacing: 0.1em;
-}
-.nameplate .ch-wrap {
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: bottom;
-}
-.nameplate .ch { display: inline-block; will-change: transform; }
-.nameplate .ch-gap { display: inline-block; width: 0.3em; }
-.nameplate .latin {
-    margin-top: 12px;
-    font-size: 11px;
-    letter-spacing: 0.52em;
-    text-indent: 0.52em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-}
-.nameplate .motto {
-    margin-top: 16px;
-    font-family: var(--serif);
-    font-size: 14px;
-    color: var(--ink-faint);
-    letter-spacing: 0.3em;
-    text-indent: 0.3em;
-}
-/* vermilion seal (印章), stamped on load */
-.seal {
-    position: absolute;
-    right: 48px;
-    top: 8px;
-    width: 74px; height: 74px;
-    border: 2px solid var(--verm);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--verm);
-    font-family: var(--serif);
-    font-weight: 700;
-    font-size: 17px;
-    letter-spacing: 0.12em;
-    text-indent: 0.12em;
-    transform: rotate(-8deg);
-    opacity: 0.92;
-}
-.seal::after {
-    content: "";
-    position: absolute; inset: 5px;
-    border: 1px solid var(--verm);
-    border-radius: 50%;
-    opacity: 0.55;
-}
-/* classic newspaper double rule: thick over thin */
-.double-rule {
-    border: 0;
-    border-top: 3px solid var(--ink);
-    border-bottom: 1px solid var(--ink);
-    height: 4px;
-    margin: 0 0 8px;
-}
-.thin-rule { border: 0; border-top: 1px solid var(--rule); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand img { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; }
+.brand-name { font-size: 17px; font-weight: 700; letter-spacing: 0.01em; }
+.brand-sub { font-size: 12px; color: var(--text-3); }
+.topbar-right { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 14px; }
+.topbar-right a { text-decoration: none; color: var(--accent); }
+.topbar-right a:hover { text-decoration: underline; }
 
-/* ── Section headings ── */
-.section { max-width: 1080px; margin: 0 auto; padding: 44px 28px 8px; position: relative; z-index: 2; }
+/* ── Page frame ── */
+.page { max-width: 960px; margin: 0 auto; padding: 0 28px 80px; }
+
+/* ── Hero ── */
+.hero { padding: 48px 0 12px; }
+.eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--text-3);
+}
+.hero-date {
+    font-size: 44px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;
+    margin-top: 10px;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero-meta { margin-top: 12px; font-size: 14px; color: var(--text-2); display: flex; gap: 18px; flex-wrap: wrap; }
+.hero-meta .motto { color: var(--text-3); }
+
+/* ── Section heading ── */
+.section { padding: 32px 0 4px; }
 .section-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 26px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    margin-bottom: 18px;
 }
-.section-title {
-    font-family: var(--serif);
-    font-size: 27px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-}
-.section-title .no {
-    font-size: 13px;
-    color: var(--verm);
-    letter-spacing: 0.2em;
-    font-family: var(--sans);
-}
-.section-note {
-    font-size: 12px;
-    letter-spacing: 0.16em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
+.section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.section-note { font-size: 13px; color: var(--text-3); }
+
+/* ── Card (shared) ── */
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--hairline-soft);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
-/* ── Lead story (头条) ── */
+/* ── Highlights ── */
 .lead {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 30px 0 34px;
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--rule);
-    text-decoration: none;
-    color: inherit;
+    display: block; text-decoration: none; color: inherit;
+    padding: 30px 30px 26px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-@media (min-width: 861px) {
-    .lead:has(figure) {
-        grid-template-columns: 1.1fr 0.9fr;
-        gap: 40px;
-        align-items: center;
-    }
+.lead:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08); }
+.lead .kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
 }
-.lead-text { display: grid; gap: 14px; }
-.kicker {
-    font-size: 12px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--verm);
-    font-weight: 600;
-}
+.kicker .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .lead h3 {
-    font-family: var(--serif);
-    font-size: clamp(30px, 4.6vw, 46px);
-    font-weight: 900;
-    line-height: 1.22;
-    letter-spacing: 0.01em;
-    max-width: 22em;
+    font-size: 27px; font-weight: 800; line-height: 1.3; letter-spacing: -0.01em;
+    margin: 14px 0 12px;
 }
-.lead p {
-    font-size: 16px;
-    color: var(--ink-soft);
-    max-width: 44em;
-    line-height: 1.85;
-}
-.lead figure {
-    border: 1px solid var(--ink);
-    outline: 1px solid var(--rule);
-    outline-offset: 5px;
-    background: var(--paper-deep);
-    align-self: center;
-}
-.lead figure img {
-    width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-    display: block;
-    filter: sepia(0.16) saturate(0.88) contrast(0.98);
-}
-.byline {
-    display: flex;
-    gap: 18px;
-    font-size: 12.5px;
-    letter-spacing: 0.12em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-}
-/* cross-platform attention badge */
-.heat {
-    color: var(--verm);
-    font-weight: 600;
-    letter-spacing: 0.14em;
-}
-.news-item .heat { font-size: 11.5px; }
-a.lead h3, a.brief h4 { transition: color 0.25s; }
-a.lead:hover h3 { color: var(--verm); }
+.lead p { font-size: 15px; color: var(--text-2); line-height: 1.75; max-width: 42em; }
+.byline { margin-top: 18px; font-size: 13px; color: var(--text-3); display: flex; gap: 16px; flex-wrap: wrap; }
+.heat { color: var(--accent); font-weight: 600; }
 
-/* ── Sub-highlights (numbered briefs) ── */
-.briefs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-}
+/* ── Briefs (sub-highlights) ── */
+.briefs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .brief {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 20px;
-    padding: 26px 0;
-    text-decoration: none;
-    color: inherit;
+    display: block; text-decoration: none; color: inherit;
+    padding: 24px 24px 22px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.brief + .brief { border-left: 1px solid var(--rule); padding-left: 34px; }
-.brief:first-child { padding-right: 34px; }
+.brief:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08); }
 .brief .num {
-    font-family: var(--serif);
-    font-size: 46px;
-    font-weight: 900;
-    line-height: 1;
-    color: var(--verm);
-    font-variant-numeric: oldstyle-nums;
-}
-.brief .thumb {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    display: block;
-    margin-bottom: 14px;
-    border: 1px solid var(--ink);
-    outline: 1px solid var(--rule);
-    outline-offset: 3px;
-    filter: sepia(0.14) saturate(0.9) contrast(0.98);
-}
-.brief h4 {
-    font-family: var(--serif);
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.4;
-    margin: 4px 0 8px;
-}
-a.brief:hover h4 { color: var(--verm); }
-.brief p {
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    line-height: 1.75;
-    margin-bottom: 10px;
-}
-
-/* ── Section tabs (资讯类型) ── */
-.tabs {
-    display: flex;
-    flex-wrap: wrap;
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--rule);
-    margin-bottom: 8px;
-}
-.tab {
-    font-family: var(--sans);
-    font-size: 13px;
-    letter-spacing: 0.18em;
-    padding: 12px 18px 10px;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    cursor: pointer;
-    color: var(--ink-soft);
-    transition: color 0.25s, border-color 0.25s;
-}
-.tab .n {
-    font-size: 10.5px;
-    color: var(--ink-faint);
-    margin-left: 6px;
-}
-.tab:hover { color: var(--ink); }
-.tab.active {
-    color: var(--verm);
-    border-bottom-color: var(--verm);
-    font-weight: 600;
-}
-.tab.active .n { color: var(--verm); }
-.tab-empty {
-    padding: 52px 20px;
-    text-align: center;
-    color: var(--ink-faint);
-    font-family: var(--serif);
-    letter-spacing: 0.24em;
-}
-
-/* ── News columns (newspaper column-rule) ── */
-.news-columns {
-    columns: 3;
-    column-gap: 44px;
-    column-rule: 1px solid var(--rule-soft);
-}
-.news-item {
-    break-inside: avoid;
-    display: block;
-    padding: 20px 2px 22px;
-    border-bottom: 1px solid var(--rule-soft);
-    text-decoration: none;
-    color: inherit;
-}
-.news-item .row {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-.news-item .idx {
-    font-family: var(--serif);
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--verm);
-    min-width: 2ch;
-}
-.tag {
-    font-size: 10.5px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 2px 9px 1px;
-    border: 1px solid currentColor;
-    font-weight: 600;
-}
-.news-item h4 {
-    font-family: var(--serif);
-    font-size: 17.5px;
-    font-weight: 700;
-    line-height: 1.5;
-    margin-bottom: 7px;
-    transition: color 0.25s;
-}
-a.news-item:hover h4 { color: var(--verm); }
-.news-item p {
-    font-size: 13px;
-    color: var(--ink-soft);
-    line-height: 1.75;
-    margin-bottom: 9px;
-}
-.news-item .meta {
-    font-size: 11.5px;
-    letter-spacing: 0.14em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-.news-item .more {
-    color: var(--verm);
-    opacity: 0;
-    transition: opacity 0.25s;
-}
-a.news-item:hover .more { opacity: 1; }
-
-/* ── Archive index ── */
-.archive-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto;
-    align-items: baseline;
-    gap: 22px;
-    padding: 17px 2px;
-    border-bottom: 1px solid var(--rule-soft);
-    text-decoration: none;
-    color: inherit;
-}
-.archive-row:first-child { border-top: 1px solid var(--ink); }
-.archive-row .a-date {
-    font-family: var(--serif);
-    font-size: 19px;
-    font-weight: 700;
+    font-size: 13px; font-weight: 700; color: var(--accent);
     letter-spacing: 0.04em;
-    transition: color 0.25s;
 }
-.archive-row:hover .a-date { color: var(--verm); }
-.archive-row .a-week { font-size: 12.5px; color: var(--ink-faint); letter-spacing: 0.14em; }
-.archive-row .a-count { font-size: 12px; letter-spacing: 0.16em; color: var(--ink-soft); text-transform: uppercase; }
-.archive-row .a-arrow {
-    font-family: var(--serif);
-    color: var(--verm);
-    transform: translateX(-6px);
-    opacity: 0;
-    transition: all 0.3s var(--ease-out);
+.brief h4 { font-size: 17px; font-weight: 700; line-height: 1.45; margin: 10px 0 8px; }
+.brief p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+.brief .byline { margin-top: 14px; font-size: 12px; }
+
+/* ── Segmented control ── */
+.seg {
+    display: flex; gap: 2px; padding: 3px;
+    background: var(--seg); border-radius: 11px;
+    margin-bottom: 16px;
+    overflow-x: auto;
 }
-.archive-row:hover .a-arrow { transform: translateX(0); opacity: 1; }
+.seg button {
+    flex: 1 0 auto; white-space: nowrap;
+    font-family: var(--sans); font-size: 13.5px; font-weight: 500;
+    padding: 8px 16px; border: none; border-radius: 8px;
+    background: transparent; color: var(--text-2); cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.seg button:hover { color: var(--text); }
+.seg button.active {
+    background: var(--card); color: var(--text); font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* ── News list ── */
+.news-list { padding: 8px 0; }
+.news-item {
+    display: block; text-decoration: none; color: inherit;
+    padding: 18px 26px;
+    border-bottom: 1px solid var(--hairline-soft);
+    transition: background 0.15s;
+}
+.news-item:last-child { border-bottom: none; }
+.news-item:hover { background: rgba(0, 0, 0, 0.02); }
+.news-item .row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.news-item .idx { font-size: 12px; font-weight: 700; color: var(--text-3); min-width: 2ch; }
+.tag {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+    padding: 2px 10px 3px; border-radius: 999px;
+}
+.news-item h4 { font-size: 16.5px; font-weight: 600; line-height: 1.5; }
+.news-item p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-top: 4px; }
+.news-item .meta {
+    margin-top: 8px; font-size: 12px; color: var(--text-3);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.news-item .meta .src { display: inline-flex; align-items: center; gap: 6px; }
+.news-item .more { color: var(--accent); opacity: 0; transition: opacity 0.15s; }
+.news-item:hover .more { opacity: 1; }
+.tab-empty { padding: 40px 20px; text-align: center; color: var(--text-3); font-size: 14px; }
+
+/* ── Archive ── */
+.archive-list { padding: 8px 0; }
+.archive-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 26px; text-decoration: none; color: inherit;
+    border-bottom: 1px solid var(--hairline-soft);
+    transition: background 0.15s;
+}
+.archive-row:last-child { border-bottom: none; }
+.archive-row:hover { background: rgba(0, 0, 0, 0.02); }
+.archive-row .a-date { font-size: 15px; font-weight: 600; }
+.archive-row .a-week { font-size: 13px; color: var(--text-3); }
+.archive-row .a-right { display: flex; align-items: center; gap: 14px; }
+.archive-row .a-count { font-size: 12px; color: var(--text-3); }
+.archive-row .a-arrow { color: var(--accent); }
+
+/* ── Footer ── */
+.footer {
+    margin-top: 56px; padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    font-size: 12.5px; color: var(--text-3);
+}
 
 /* ── Empty ── */
-.empty { text-align: center; padding: 90px 20px; color: var(--ink-faint); font-family: var(--serif); letter-spacing: 0.2em; }
-
-/* ── Footer / colophon ── */
-.footer {
-    max-width: 1080px;
-    margin: 70px auto 0;
-    padding: 26px 28px 60px;
-    border-top: 3px solid var(--ink);
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-}
-.footer .zh { font-family: var(--serif); letter-spacing: 0.1em; text-transform: none; }
-
-/* ── Reveal hooks: initial hidden states are set by GSAP only,
-     so the page stays fully visible when JS/CDN is unavailable ── */
+.empty { text-align: center; padding: 60px 20px; color: var(--text-3); font-size: 14px; }
 
 /* ── Responsive ── */
-@media (max-width: 860px) {
-    .news-columns { columns: 2; }
-    .seal { display: none; }
-}
-@media (max-width: 640px) {
-    .frontpage { padding: 104px 20px 0; }
-    .section { padding: 36px 20px 4px; }
-    .news-columns { columns: 1; }
+@media (max-width: 700px) {
+    .page { padding: 0 16px 60px; }
+    .topbar-inner { padding: 12px 16px; }
+    .hero { padding: 36px 0 8px; }
+    .hero-date { font-size: 34px; }
     .briefs { grid-template-columns: 1fr; }
-    .brief + .brief { border-left: 0; border-top: 1px solid var(--rule); padding-left: 0; }
-    .brief:first-child { padding-right: 0; }
-    .masthead-inner { padding: 11px 20px; }
-    .archive-row { grid-template-columns: 1fr auto; row-gap: 4px; }
-    .archive-row .a-week { display: none; }
+    .lead { padding: 22px 20px 20px; }
+    .lead h3 { font-size: 22px; }
+    .brief { padding: 20px 20px 18px; }
+    .news-item { padding: 16px 20px; }
+    .archive-row { padding: 14px 20px; }
 }
 </style>
 </head>
 <body>
-
-    
-    <header class="masthead">
-        <div class="masthead-inner">
+    <header class="topbar">
+        <div class="topbar-inner">
             <a href="./" class="brand">
-                <span class="brand-text">
-                    <span class="brand-name">AI 早报</span>
-                    <span class="brand-sub"><img src="./icon.jpg" alt="米桶">米桶</span>
-                </span>
+                <img src="./icon.jpg" alt="米桶">
+                <span class="brand-name">米桶 AI 早报</span>
             </a>
-            <span class="masthead-meta">2026年8月22日 星期六</span>
+            <span class="topbar-right"></span>
         </div>
     </header>
+
+    <div class="page">
+
     
-    <section class="frontpage">
-        <div class="dateline">
-            <span>2026年8月22日 星期六</span>
-            <span class="live">每日更新中</span>
+    <section class="hero">
+        <div class="eyebrow">Mitong AI Daily Briefing</div>
+        <h1 class="hero-date">2026年8月22日</h1>
+        <div class="hero-meta">
+            <span>星期六</span>
             <span>NO.20260822</span>
+            <span class="motto">每日精选 · 十秒速览</span>
         </div>
-        <div class="nameplate">
-            <div class="seal">米桶</div>
-            <h1><span class="ch-wrap"><span class="ch">A</span></span><span class="ch-wrap"><span class="ch">I</span></span><span class="ch-gap"></span><span class="ch-wrap"><span class="ch">早</span></span><span class="ch-wrap"><span class="ch">报</span></span></h1>
-            <div class="latin">Mitong AI Daily Briefing</div>
-            <div class="motto">每日精选 · 十秒速览</div>
-        </div>
-        <hr class="double-rule">
     </section>
     
     <section class="section">
         <div class="section-head">
-            <h2 class="section-title"><span class="no">壹</span>今日看点</h2>
-            <span class="section-note">Front Page</span>
+            <h2 class="section-title">今日看点</h2>
+            <span class="section-note">Headlines</span>
         </div>
         
-    <a href="https://wallstreetcn.com/articles/3780034" target="_blank" rel="noopener" class="lead">
-        <div class="lead-text">
-            <span class="kicker">头条 · 证券</span>
-            <h3>从“AI股神”抄底的“带血筹码”，Citadel已卖掉80%！</h3>
-            <p>城堡投资（Citadel）创始人Ken Griffin向客户披露，公司已大幅削减从对冲基金Situational...</p>
-            <div class="byline"><span>华尔街见闻</span><span>2026-08-22</span></div>
-        </div>
-        
+    <a href="https://wallstreetcn.com/articles/3780034" target="_blank" rel="noopener" class="lead card">
+        <span class="kicker"><span class="dot" style="background:#96690F"></span>头条 · 证券</span>
+        <h3>从“AI股神”抄底的“带血筹码”，Citadel已卖掉80%！</h3>
+        <p>城堡投资（Citadel）创始人Ken Griffin向客户披露，公司已大幅削减从对冲基金Situational...</p>
+        <div class="byline"><span>华尔街见闻 · 2026-08-22</span></div>
     </a>
         <div class="briefs">
-    <a href="https://wallstreetcn.com/articles/3780041" target="_blank" rel="noopener" class="brief">
+    <a href="https://wallstreetcn.com/articles/3780041" target="_blank" rel="noopener" class="brief card">
         <span class="num">02</span>
-        <div>
-            <img class="thumb" src="https://wpimg-wscn.awtmt.com/65ddb41b-9b13-4d9f-87cb-58872304aa41.png" alt="贝森特没救成美债却点燃“美元贬值交易”！黄金创三个月新高，比特币单周暴涨超25%" loading="lazy" onerror="this.remove()">
-            <span class="kicker">证券</span>
-            <h4>贝森特没救成美债却点燃“美元贬值交易”！黄金创三个月新高，比特币单周暴涨超25%</h4>
-            <p>美国财政部长贝森特压制长端美债收益率的努力，对市场的直接影响仅维持了不到一天。</p>
-            <div class="byline"><span>华尔街见闻</span><span>2026-08-22</span></div>
-        </div>
-    </a>
-
-    <a href="https://wallstreetcn.com/articles/3780043" target="_blank" rel="noopener" class="brief">
-        <span class="num">03</span>
-        <div>
-            <img class="thumb" src="https://wdl-wscn.awtmt.com/2ed0c8c8-fb82-499d-b81c-3fd1de114eae" alt="华尔街见闻早餐FM-Radio | 2026年8月22日" loading="lazy" onerror="this.remove()">
-            <span class="kicker">证券</span>
-            <h4>华尔街见闻早餐FM-Radio | 2026年8月22日</h4>
-            <p>华见早安之声
-
-
-市场概述
-尽管美债收益率再度上涨、但对冲基金加速转向金融、医疗与能源板块，叠加美国财政部长债回购...</p>
-            <div class="byline"><span>华尔街见闻</span><span>2026-08-21</span></div>
-        </div>
-    </a></div>
-    </section>
-    
-    <section class="section">
-        <div class="section-head">
-            <h2 class="section-title"><span class="no">叁</span>全部资讯</h2>
-            <span class="section-note">16 条 · All Stories</span>
-        </div>
-        <div class="tabs" id="news-tabs">
-            <button class="tab active" data-sec="all">全部<span class="n">16</span></button><button class="tab" data-sec="ai">AI 资讯<span class="n">5</span></button><button class="tab" data-sec="world">国际时事<span class="n">1</span></button><button class="tab" data-sec="finance">证券资讯<span class="n">10</span></button>
-        </div>
-        <div class="news-columns" id="news-columns">
-            
-    <a href="https://wallstreetcn.com/articles/3780034" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">01</span><span class="tag" style="color:#96690F">证券</span></div>
-        <h4>从“AI股神”抄底的“带血筹码”，Citadel已卖掉80%！</h4>
-        <p>城堡投资（Citadel）创始人Ken Griffin向客户披露，公司已大幅削减从对冲基金Situational...</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-22</span><span class="more">阅读原文 →</span></div>
-    </a>
-
-    <a href="https://wallstreetcn.com/articles/3780041" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">02</span><span class="tag" style="color:#96690F">证券</span></div>
         <h4>贝森特没救成美债却点燃“美元贬值交易”！黄金创三个月新高，比特币单周暴涨超25%</h4>
         <p>美国财政部长贝森特压制长端美债收益率的努力，对市场的直接影响仅维持了不到一天。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-22</span><span class="more">阅读原文 →</span></div>
+        <div class="byline"><span>华尔街见闻 · 2026-08-22</span></div>
     </a>
 
-    <a href="https://wallstreetcn.com/articles/3780043" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">03</span><span class="tag" style="color:#96690F">证券</span></div>
+    <a href="https://wallstreetcn.com/articles/3780043" target="_blank" rel="noopener" class="brief card">
+        <span class="num">03</span>
         <h4>华尔街见闻早餐FM-Radio | 2026年8月22日</h4>
         <p>华见早安之声
 
 
 市场概述
 尽管美债收益率再度上涨、但对冲基金加速转向金融、医疗与能源板块，叠加美国财政部长债回购...</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="byline"><span>华尔街见闻 · 2026-08-21</span></div>
+    </a></div>
+    </section>
+    
+    <section class="section">
+        <div class="section-head">
+            <h2 class="section-title">全部资讯</h2>
+            <span class="section-note">16 条 · All Stories</span>
+        </div>
+        <div class="seg" id="news-seg"><button class="active" data-sec="all">全部 · 16</button><button data-sec="ai">AI 资讯 · 5</button><button data-sec="world">国际时事 · 1</button><button data-sec="finance">证券资讯 · 10</button></div>
+        <div class="card news-list" id="news-list">
+    <a href="https://wallstreetcn.com/articles/3780034" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">01</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
+        <h4>从“AI股神”抄底的“带血筹码”，Citadel已卖掉80%！</h4>
+        <p>城堡投资（Citadel）创始人Ken Griffin向客户披露，公司已大幅削减从对冲基金Situational...</p>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-22</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780041" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">02</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
+        <h4>贝森特没救成美债却点燃“美元贬值交易”！黄金创三个月新高，比特币单周暴涨超25%</h4>
+        <p>美国财政部长贝森特压制长端美债收益率的努力，对市场的直接影响仅维持了不到一天。</p>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-22</span><span class="more">阅读原文 →</span></div>
+    </a>
+
+    <a href="https://wallstreetcn.com/articles/3780043" target="_blank" rel="noopener" class="news-item" data-section="finance">
+        <div class="row"><span class="idx">03</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
+        <h4>华尔街见闻早餐FM-Radio | 2026年8月22日</h4>
+        <p>华见早安之声
+
+
+市场概述
+尽管美债收益率再度上涨、但对冲基金加速转向金融、医疗与能源板块，叠加美国财政部长债回购...</p>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3779986" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">04</span><span class="tag" style="color:#96690F">证券</span></div>
+        <div class="row"><span class="idx">04</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
         <h4>美股止跌反弹，道指涨近1%，数字货币再猛涨，黄金升破4600</h4>
         <p>尽管美债收益率再度上涨、但对冲基金加速转向金融、医疗与能源板块，叠加美国财政部长债回购加码的预期与消费韧性支撑，风...</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780042" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">05</span><span class="tag" style="color:#96690F">证券</span></div>
+        <div class="row"><span class="idx">05</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
         <h4>报道：Anthropic招股书或把美国公众对AI的抵制情绪列为风险因素</h4>
         <p>Anthropic正准备登陆公开市场，但当前越来越多的美国人对人工智能感到担忧，并强烈反对新建数据中心。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780040" target="_blank" rel="noopener" class="news-item" data-section="ai">
-        <div class="row"><span class="idx">06</span><span class="tag" style="color:#FF3B30">安全</span></div>
+        <div class="row"><span class="idx">06</span><span class="tag" style="color:#FF3B30;background:#FF3B301a">安全</span></div>
         <h4>英伟达拟斥资60亿美元获Poolside AI模型授权，另投10亿美元并吸纳百余名员工</h4>
         <p>英伟达正以一种规避传统并购审查的方式，持续向人工智能行业注入巨量资金。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780038" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">07</span><span class="tag" style="color:#96690F">证券</span></div>
+        <div class="row"><span class="idx">07</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
         <h4>美债扩大回购宣布前，资产管理公司增持5年期和10年期期货多头</h4>
         <p>据美国商品期货交易委员会（CFTC）数据，在美国财政部意外宣布扩大长期美债回购规模之前，资产管理公司已增加部分美国...</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780036" target="_blank" rel="noopener" class="news-item" data-section="ai">
-        <div class="row"><span class="idx">08</span><span class="tag" style="color:#34C759">产业</span></div>
+        <div class="row"><span class="idx">08</span><span class="tag" style="color:#34C759;background:#34C7591a">产业</span></div>
         <h4>房利美12名高管突遭解雇，美国房贷市场稳定性担忧升温</h4>
         <p>美国住房抵押贷款市场核心机构房利美（Fannie Mae）本周经历高层动荡，约12名高级管理人员遭到解雇，引发业界...</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780035" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">09</span><span class="tag" style="color:#96690F">证券</span></div>
+        <div class="row"><span class="idx">09</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
         <h4>报道：博通的债务交易预计将达到700亿美元以上</h4>
         <p>博通正寻求迄今规模最大的AI基础设施融资之一，凸显科技行业为支撑人工智能扩张而对资本市场的空前依赖。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780033" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">10</span><span class="tag" style="color:#96690F">证券</span></div>
+        <div class="row"><span class="idx">10</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
         <h4>瑞士央行官员：必要时将重启负利率，AI短期或推高通胀</h4>
         <p>瑞士央行政策委员会成员表示，若有必要，瑞士央行将再度将利率降至零以下，以维持通胀在目标区间内。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780029" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">11</span><span class="tag" style="color:#96690F">证券</span></div>
+        <div class="row"><span class="idx">11</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
         <h4>摩根大通：AI债务发行激增，数据中心相关债券的利差持续走阔</h4>
         <p>数据中心相关债务市场正面临新的定价压力。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780027" target="_blank" rel="noopener" class="news-item" data-section="world">
-        <div class="row"><span class="idx">12</span><span class="tag" style="color:#2E5E4E">国际</span></div>
+        <div class="row"><span class="idx">12</span><span class="tag" style="color:#2E5E4E;background:#2E5E4E1a">国际</span></div>
         <h4>美加贸易谈判最后冲刺，加媒称协议拟设钢铁配额、配额内关税降至25%</h4>
         <p>美加贸易谈判进入最后冲刺阶段，一项潜在协议的关键细节正在浮出水面。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780024" target="_blank" rel="noopener" class="news-item" data-section="finance">
-        <div class="row"><span class="idx">13</span><span class="tag" style="color:#96690F">证券</span></div>
+        <div class="row"><span class="idx">13</span><span class="tag" style="color:#96690F;background:#96690F1a">证券</span></div>
         <h4>锌价创四年新高，现货升水扩至年内最大，市场供需矛盾加剧</h4>
         <p>汇丰银行全球大宗商品团队周四发出警告，当前锌市场正出现供应极度紧缺的信号。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780018" target="_blank" rel="noopener" class="news-item" data-section="ai">
-        <div class="row"><span class="idx">14</span><span class="tag" style="color:#FF9500">算力</span></div>
+        <div class="row"><span class="idx">14</span><span class="tag" style="color:#FF9500;background:#FF95001a">算力</span></div>
         <h4>算力护城河向“上游”蔓延，英伟达拟数亿美元投资电力开发商Cloverleaf，破解AI基建终极瓶颈</h4>
         <p>英伟达正将触角延伸至数据中心电力开发的最前端。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://www.qbitai.com/2026/08/476733.html" target="_blank" rel="noopener" class="news-item" data-section="ai">
-        <div class="row"><span class="idx">15</span><span class="tag" style="color:#5856D6">Agent</span></div>
+        <div class="row"><span class="idx">15</span><span class="tag" style="color:#5856D6;background:#5856D61a">Agent</span></div>
         <h4>明略科技携手海康机器人亮相世界机器人大会，以“Agent+具身”联合进入商业机器人场景</h4>
         <p>明略科技（2718.HK）与海康机器人联合参展2026WRC，聚焦商业服务领域展示具身智能落地进展。</p>
-        <div class="meta"><span>量子位 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">量子位 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
 
     <a href="https://wallstreetcn.com/articles/3780000" target="_blank" rel="noopener" class="news-item" data-section="ai">
-        <div class="row"><span class="idx">16</span><span class="tag" style="color:#AF52DE">模型</span></div>
+        <div class="row"><span class="idx">16</span><span class="tag" style="color:#AF52DE;background:#AF52DE1a">模型</span></div>
         <h4>DeepSeek发布实验性视觉理解模型，多模态Agent能力逼近Opus-4.8</h4>
         <p>DeepSeek加速布局多模态。</p>
-        <div class="meta"><span>华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
+        <div class="meta"><span class="src">华尔街见闻 · 2026-08-21</span><span class="more">阅读原文 →</span></div>
     </a>
         </div>
         <div class="tab-empty" id="news-empty" hidden>本栏目今日暂无资讯</div>
     </section>
     
     
+    </div>
 
     <footer class="footer">
-        <span class="zh">米桶 AI 早报 · 仅供信息参考，不构成任何建议</span>
-        <span>Sources · 机器之心 / 量子位 / 36氪 / BBC / FT / 华尔街见闻</span>
+        <span>米桶 AI 早报 · 仅供信息参考，不构成任何建议</span>
+        <span>机器之心 / 量子位 / 36氪 / BBC / FT / 华尔街见闻</span>
     </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script>
-// Direction-aware masthead: hide on scroll down, return on scroll up (vanilla, always on).
+// Section tabs: filter the news list by 资讯类型 (vanilla, always on).
 (function () {
-    const mh = document.querySelector(".masthead");
-    let lastY = window.scrollY;
-    window.addEventListener("scroll", () => {
-        const y = window.scrollY;
-        if (y > 140 && y > lastY + 4) mh.classList.add("hidden");
-        else if (y < lastY - 4 || y <= 140) mh.classList.remove("hidden");
-        lastY = y;
-    }, { passive: true });
-})();
-
-// Section tabs: filter the news columns by 资讯类型 (vanilla, always on).
-(function () {
-    const tabs = document.querySelectorAll("#news-tabs .tab");
-    if (!tabs.length) return;
-    const items = document.querySelectorAll("#news-columns .news-item");
+    const seg = document.getElementById("news-seg");
+    if (!seg) return;
+    const items = document.querySelectorAll("#news-list .news-item");
     const emptyEl = document.getElementById("news-empty");
-    tabs.forEach((tab) => tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.classList.remove("active"));
-        tab.classList.add("active");
-        const sec = tab.dataset.sec;
+    seg.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        seg.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const sec = btn.dataset.sec;
         let shown = 0;
         items.forEach((it) => {
             const match = sec === "all" || it.dataset.section === sec;
@@ -783,96 +427,7 @@ a.news-item:hover .more { opacity: 1; }
             if (match) shown++;
         });
         if (emptyEl) emptyEl.hidden = shown !== 0;
-    }));
-})();
-
-// ── GSAP choreography ──
-// Everything below only runs when the CDN delivered GSAP and the user
-// hasn't asked for reduced motion; otherwise the page is simply static.
-(function () {
-    if (!window.gsap || !window.ScrollTrigger) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.registerPlugin(ScrollTrigger);
-
-    // · Opening sequence: press-room curtain-up ·
-    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-    tl.from(".masthead-inner", { y: -26, opacity: 0, duration: 0.6 })
-        .from(".dateline > *", { y: 14, opacity: 0, stagger: 0.08, duration: 0.5 }, "-=0.25")
-        .from(".nameplate .ch", {
-            yPercent: 118, rotate: 5, stagger: 0.075, duration: 0.95,
-        }, "-=0.2")
-        .from(".nameplate .latin, .nameplate .motto", {
-            y: 12, opacity: 0, stagger: 0.12, duration: 0.5,
-        }, "-=0.55")
-        .from(".double-rule", {
-            scaleX: 0, transformOrigin: "left center", duration: 0.9, ease: "power3.inOut",
-        }, "-=0.35");
-
-    const seal = document.querySelector(".seal");
-    if (seal) {
-        tl.from(seal, {
-            scale: 1.8, opacity: 0, rotate: -20,
-            duration: 0.42, ease: "back.out(2.4)",
-        }, "-=0.25");
-    }
-
-    // · Section headers rise as they enter ·
-    gsap.utils.toArray(".section-head").forEach((el) => {
-        gsap.from(el, {
-            y: 26, opacity: 0, duration: 0.7,
-            scrollTrigger: { trigger: el, start: "top 88%" },
-        });
     });
-
-    // · Lead story: text rises, photograph unveiled with a curtain wipe + parallax ·
-    const lead = document.querySelector(".lead");
-    if (lead) {
-        gsap.from(lead.querySelector(".lead-text"), {
-            y: 44, opacity: 0, duration: 0.9,
-            scrollTrigger: { trigger: lead, start: "top 82%" },
-        });
-        const fig = lead.querySelector("figure");
-        if (fig) {
-            gsap.fromTo(fig,
-                { clipPath: "inset(0 0 0 100%)" },
-                {
-                    clipPath: "inset(0 0 0 0%)", duration: 1.15, ease: "power4.inOut",
-                    scrollTrigger: { trigger: lead, start: "top 78%" },
-                });
-            gsap.fromTo(fig.querySelector("img"),
-                { yPercent: -6, scale: 1.08 },
-                {
-                    yPercent: 6, ease: "none",
-                    scrollTrigger: { trigger: lead, start: "top bottom", end: "bottom top", scrub: true },
-                });
-        }
-    }
-
-    // · Numbered briefs ·
-    gsap.utils.toArray(".brief").forEach((b, i) => {
-        gsap.from(b, {
-            y: 34, opacity: 0, duration: 0.7, delay: i * 0.12,
-            scrollTrigger: { trigger: b, start: "top 88%" },
-        });
-    });
-
-    // · News columns and archive rows: batched stagger on scroll ·
-    if (document.querySelector(".news-item")) {
-        ScrollTrigger.batch(".news-item", {
-            start: "top 93%",
-            onEnter: (els) => gsap.fromTo(els,
-                { y: 24, opacity: 0 },
-                { y: 0, opacity: 1, stagger: 0.05, duration: 0.55, overwrite: true }),
-        });
-    }
-    if (document.querySelector(".archive-row")) {
-        ScrollTrigger.batch(".archive-row", {
-            start: "top 94%",
-            onEnter: (els) => gsap.fromTo(els,
-                { x: -18, opacity: 0 },
-                { x: 0, opacity: 1, stagger: 0.06, duration: 0.5, overwrite: true }),
-        });
-    }
 })();
 </script>
 </body>

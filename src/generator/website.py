@@ -1,13 +1,12 @@
-"""Generate the 米桶 AI 早报 website — letterpress morning-gazette edition.
+"""Generate the 米桶 AI 早报 website — modern Apple-style edition.
 
-Design language: a printed Chinese morning newspaper.
-  · Cream paper, ink black, a single vermilion accent (朱砂).
-  · Song/serif headlines with tight leading, oldstyle numerals.
-  · Hairline rules and newspaper column-rules instead of cards.
-  · Direction-aware masthead (hides on scroll down, returns on scroll up).
-  · Lead story and numbered briefs carry RSS images when available,
-    with a light sepia tone for a printed-photograph feel.
-  · Section tabs filter the news columns by 资讯类型.
+Design language: clean, light, glassy — the Apple software aesthetic.
+  · Light system-gray canvas, white cards, hairline dividers.
+  · SF/PingFang system type, no serif.
+  · Rounded cards (20px), one blue→violet gradient accent used with restraint.
+  · Segmented control filters the news list by 资讯类型.
+  · List layout (not card grid), source shown inline on each row.
+  · Sticky frosted-glass top bar.
   · No external JS/CSS dependencies — everything works offline.
 """
 
@@ -100,569 +99,231 @@ def get_all_briefings() -> list[dict]:
 # ───────────────────────── shared CSS ─────────────────────────
 CSS = '''<style>
 :root {
-    --paper: #F6F1E7;
-    --paper-deep: #EDE5D4;
-    --ink: #1B1611;
-    --ink-soft: #57503F;
-    --ink-faint: #93876F;
-    --verm: #C2341B;
-    --verm-deep: #9E2A15;
-    --rule: rgba(27, 22, 17, 0.18);
-    --rule-soft: rgba(27, 22, 17, 0.09);
-    --serif: "Songti SC", "STSong", "Noto Serif SC", "SimSun", Georgia, serif;
-    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
-    --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
+    --bg: #F5F5F7;
+    --card: #FFFFFF;
+    --text: #1D1D1F;
+    --text-2: #6E6E73;
+    --text-3: #86868B;
+    --accent: #0071E3;
+    --accent-2: #5E5CE6;
+    --hairline: rgba(0, 0, 0, 0.08);
+    --hairline-soft: rgba(0, 0, 0, 0.05);
+    --seg: #E8E8ED;
+    --radius: 20px;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+            "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
     font-family: var(--sans);
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--bg);
+    color: var(--text);
     line-height: 1.6;
-    font-variant-numeric: oldstyle-nums;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-/* paper grain */
-body::before {
-    content: "";
-    position: fixed; inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0.05;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-::selection { background: var(--verm); color: var(--paper); }
+a { color: inherit; }
+::selection { background: rgba(0, 113, 227, 0.18); }
+:focus-visible { outline: 3px solid rgba(0, 113, 227, 0.5); outline-offset: 2px; border-radius: 6px; }
 
-/* ── Masthead ── */
-.masthead {
-    position: fixed; top: 0; left: 0; right: 0;
-    z-index: 100;
-    background: var(--paper);
-    border-bottom: 1px solid var(--rule);
-    transition: transform 0.45s var(--ease-out);
+/* ── Top bar (frosted glass) ── */
+.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(245, 245, 247, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--hairline-soft);
 }
-.masthead.hidden { transform: translateY(-101%); }
-.masthead-inner {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 13px 28px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
+.topbar-inner {
+    max-width: 960px; margin: 0 auto;
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
 }
-.brand {
-    text-decoration: none;
-    color: var(--ink);
-    display: flex;
-    align-items: center;
-}
-.brand-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-}
-.brand-name {
-    font-family: var(--serif);
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-}
-.brand-sub {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10.5px;
-    letter-spacing: 0.3em;
-    color: var(--ink-faint);
-}
-.brand-sub img {
-    width: 13px;
-    height: 13px;
-    object-fit: contain;
-    border-radius: 3px;
-}
-.masthead-meta {
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-}
-.masthead-meta a {
-    color: var(--verm);
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.25s;
-}
-.masthead-meta a:hover { border-color: var(--verm); }
-/* ── Front page hero ── */
-.frontpage {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 118px 28px 0;
-    position: relative;
-    z-index: 2;
-}
-.dateline {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--rule);
-    padding: 9px 2px;
-    font-size: 12.5px;
-    letter-spacing: 0.12em;
-    color: var(--ink-soft);
-    text-transform: uppercase;
-}
-.dateline .live::before {
-    content: "";
-    display: inline-block;
-    width: 6px; height: 6px;
-    background: var(--verm);
-    border-radius: 50%;
-    margin-right: 7px;
-    vertical-align: 1px;
-    animation: beat 2.4s ease-in-out infinite;
-}
-@keyframes beat { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-.nameplate {
-    text-align: center;
-    padding: 34px 0 26px;
-    position: relative;
-}
-.nameplate h1 {
-    font-family: var(--serif);
-    font-size: clamp(38px, 5.6vw, 64px);
-    font-weight: 900;
-    line-height: 1.1;
-    letter-spacing: 0.1em;
-}
-.nameplate .ch-wrap {
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: bottom;
-}
-.nameplate .ch { display: inline-block; will-change: transform; }
-.nameplate .ch-gap { display: inline-block; width: 0.3em; }
-.nameplate .latin {
-    margin-top: 12px;
-    font-size: 11px;
-    letter-spacing: 0.52em;
-    text-indent: 0.52em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-}
-.nameplate .motto {
-    margin-top: 16px;
-    font-family: var(--serif);
-    font-size: 14px;
-    color: var(--ink-faint);
-    letter-spacing: 0.3em;
-    text-indent: 0.3em;
-}
-/* vermilion seal (印章), stamped on load */
-.seal {
-    position: absolute;
-    right: 48px;
-    top: 8px;
-    width: 74px; height: 74px;
-    border: 2px solid var(--verm);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--verm);
-    font-family: var(--serif);
-    font-weight: 700;
-    font-size: 17px;
-    letter-spacing: 0.12em;
-    text-indent: 0.12em;
-    transform: rotate(-8deg);
-    opacity: 0.92;
-}
-.seal::after {
-    content: "";
-    position: absolute; inset: 5px;
-    border: 1px solid var(--verm);
-    border-radius: 50%;
-    opacity: 0.55;
-}
-/* classic newspaper double rule: thick over thin */
-.double-rule {
-    border: 0;
-    border-top: 3px solid var(--ink);
-    border-bottom: 1px solid var(--ink);
-    height: 4px;
-    margin: 0 0 8px;
-}
-.thin-rule { border: 0; border-top: 1px solid var(--rule); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.brand img { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; }
+.brand-name { font-size: 17px; font-weight: 700; letter-spacing: 0.01em; }
+.brand-sub { font-size: 12px; color: var(--text-3); }
+.topbar-right { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 14px; }
+.topbar-right a { text-decoration: none; color: var(--accent); }
+.topbar-right a:hover { text-decoration: underline; }
 
-/* ── Section headings ── */
-.section { max-width: 1080px; margin: 0 auto; padding: 44px 28px 8px; position: relative; z-index: 2; }
+/* ── Page frame ── */
+.page { max-width: 960px; margin: 0 auto; padding: 0 28px 80px; }
+
+/* ── Hero ── */
+.hero { padding: 48px 0 12px; }
+.eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--text-3);
+}
+.hero-date {
+    font-size: 44px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;
+    margin-top: 10px;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.hero-meta { margin-top: 12px; font-size: 14px; color: var(--text-2); display: flex; gap: 18px; flex-wrap: wrap; }
+.hero-meta .motto { color: var(--text-3); }
+
+/* ── Section heading ── */
+.section { padding: 32px 0 4px; }
 .section-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 26px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    margin-bottom: 18px;
 }
-.section-title {
-    font-family: var(--serif);
-    font-size: 27px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-}
-.section-title .no {
-    font-size: 13px;
-    color: var(--verm);
-    letter-spacing: 0.2em;
-    font-family: var(--sans);
-}
-.section-note {
-    font-size: 12px;
-    letter-spacing: 0.16em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
+.section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.section-note { font-size: 13px; color: var(--text-3); }
+
+/* ── Card (shared) ── */
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--hairline-soft);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 0, 0, 0.04);
 }
 
-/* ── Lead story (头条) ── */
+/* ── Highlights ── */
 .lead {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 30px 0 34px;
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--rule);
-    text-decoration: none;
-    color: inherit;
+    display: block; text-decoration: none; color: inherit;
+    padding: 30px 30px 26px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-@media (min-width: 861px) {
-    .lead:has(figure) {
-        grid-template-columns: 1.1fr 0.9fr;
-        gap: 40px;
-        align-items: center;
-    }
+.lead:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08); }
+.lead .kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
 }
-.lead-text { display: grid; gap: 14px; }
-.kicker {
-    font-size: 12px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--verm);
-    font-weight: 600;
-}
+.kicker .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .lead h3 {
-    font-family: var(--serif);
-    font-size: clamp(30px, 4.6vw, 46px);
-    font-weight: 900;
-    line-height: 1.22;
-    letter-spacing: 0.01em;
-    max-width: 22em;
+    font-size: 27px; font-weight: 800; line-height: 1.3; letter-spacing: -0.01em;
+    margin: 14px 0 12px;
 }
-.lead p {
-    font-size: 16px;
-    color: var(--ink-soft);
-    max-width: 44em;
-    line-height: 1.85;
-}
-.lead figure {
-    border: 1px solid var(--ink);
-    outline: 1px solid var(--rule);
-    outline-offset: 5px;
-    background: var(--paper-deep);
-    align-self: center;
-}
-.lead figure img {
-    width: 100%;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-    display: block;
-    filter: sepia(0.16) saturate(0.88) contrast(0.98);
-}
-.byline {
-    display: flex;
-    gap: 18px;
-    font-size: 12.5px;
-    letter-spacing: 0.12em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-}
-/* cross-platform attention badge */
-.heat {
-    color: var(--verm);
-    font-weight: 600;
-    letter-spacing: 0.14em;
-}
-.news-item .heat { font-size: 11.5px; }
-a.lead h3, a.brief h4 { transition: color 0.25s; }
-a.lead:hover h3 { color: var(--verm); }
+.lead p { font-size: 15px; color: var(--text-2); line-height: 1.75; max-width: 42em; }
+.byline { margin-top: 18px; font-size: 13px; color: var(--text-3); display: flex; gap: 16px; flex-wrap: wrap; }
+.heat { color: var(--accent); font-weight: 600; }
 
-/* ── Sub-highlights (numbered briefs) ── */
-.briefs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-}
+/* ── Briefs (sub-highlights) ── */
+.briefs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
 .brief {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 20px;
-    padding: 26px 0;
-    text-decoration: none;
-    color: inherit;
+    display: block; text-decoration: none; color: inherit;
+    padding: 24px 24px 22px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.brief + .brief { border-left: 1px solid var(--rule); padding-left: 34px; }
-.brief:first-child { padding-right: 34px; }
+.brief:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08); }
 .brief .num {
-    font-family: var(--serif);
-    font-size: 46px;
-    font-weight: 900;
-    line-height: 1;
-    color: var(--verm);
-    font-variant-numeric: oldstyle-nums;
-}
-.brief .thumb {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    display: block;
-    margin-bottom: 14px;
-    border: 1px solid var(--ink);
-    outline: 1px solid var(--rule);
-    outline-offset: 3px;
-    filter: sepia(0.14) saturate(0.9) contrast(0.98);
-}
-.brief h4 {
-    font-family: var(--serif);
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 1.4;
-    margin: 4px 0 8px;
-}
-a.brief:hover h4 { color: var(--verm); }
-.brief p {
-    font-size: 13.5px;
-    color: var(--ink-soft);
-    line-height: 1.75;
-    margin-bottom: 10px;
-}
-
-/* ── Section tabs (资讯类型) ── */
-.tabs {
-    display: flex;
-    flex-wrap: wrap;
-    border-top: 1px solid var(--ink);
-    border-bottom: 1px solid var(--rule);
-    margin-bottom: 8px;
-}
-.tab {
-    font-family: var(--sans);
-    font-size: 13px;
-    letter-spacing: 0.18em;
-    padding: 12px 18px 10px;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    cursor: pointer;
-    color: var(--ink-soft);
-    transition: color 0.25s, border-color 0.25s;
-}
-.tab .n {
-    font-size: 10.5px;
-    color: var(--ink-faint);
-    margin-left: 6px;
-}
-.tab:hover { color: var(--ink); }
-.tab.active {
-    color: var(--verm);
-    border-bottom-color: var(--verm);
-    font-weight: 600;
-}
-.tab.active .n { color: var(--verm); }
-.tab-empty {
-    padding: 52px 20px;
-    text-align: center;
-    color: var(--ink-faint);
-    font-family: var(--serif);
-    letter-spacing: 0.24em;
-}
-
-/* ── News columns (newspaper column-rule) ── */
-.news-columns {
-    columns: 3;
-    column-gap: 44px;
-    column-rule: 1px solid var(--rule-soft);
-}
-.news-item {
-    break-inside: avoid;
-    display: block;
-    padding: 20px 2px 22px;
-    border-bottom: 1px solid var(--rule-soft);
-    text-decoration: none;
-    color: inherit;
-}
-.news-item .row {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-.news-item .idx {
-    font-family: var(--serif);
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--verm);
-    min-width: 2ch;
-}
-.tag {
-    font-size: 10.5px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    padding: 2px 9px 1px;
-    border: 1px solid currentColor;
-    font-weight: 600;
-}
-.news-item h4 {
-    font-family: var(--serif);
-    font-size: 17.5px;
-    font-weight: 700;
-    line-height: 1.5;
-    margin-bottom: 7px;
-    transition: color 0.25s;
-}
-a.news-item:hover h4 { color: var(--verm); }
-.news-item p {
-    font-size: 13px;
-    color: var(--ink-soft);
-    line-height: 1.75;
-    margin-bottom: 9px;
-}
-.news-item .meta {
-    font-size: 11.5px;
-    letter-spacing: 0.14em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-.news-item .more {
-    color: var(--verm);
-    opacity: 0;
-    transition: opacity 0.25s;
-}
-a.news-item:hover .more { opacity: 1; }
-
-/* ── Archive index ── */
-.archive-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto;
-    align-items: baseline;
-    gap: 22px;
-    padding: 17px 2px;
-    border-bottom: 1px solid var(--rule-soft);
-    text-decoration: none;
-    color: inherit;
-}
-.archive-row:first-child { border-top: 1px solid var(--ink); }
-.archive-row .a-date {
-    font-family: var(--serif);
-    font-size: 19px;
-    font-weight: 700;
+    font-size: 13px; font-weight: 700; color: var(--accent);
     letter-spacing: 0.04em;
-    transition: color 0.25s;
 }
-.archive-row:hover .a-date { color: var(--verm); }
-.archive-row .a-week { font-size: 12.5px; color: var(--ink-faint); letter-spacing: 0.14em; }
-.archive-row .a-count { font-size: 12px; letter-spacing: 0.16em; color: var(--ink-soft); text-transform: uppercase; }
-.archive-row .a-arrow {
-    font-family: var(--serif);
-    color: var(--verm);
-    transform: translateX(-6px);
-    opacity: 0;
-    transition: all 0.3s var(--ease-out);
+.brief h4 { font-size: 17px; font-weight: 700; line-height: 1.45; margin: 10px 0 8px; }
+.brief p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; }
+.brief .byline { margin-top: 14px; font-size: 12px; }
+
+/* ── Segmented control ── */
+.seg {
+    display: flex; gap: 2px; padding: 3px;
+    background: var(--seg); border-radius: 11px;
+    margin-bottom: 16px;
+    overflow-x: auto;
 }
-.archive-row:hover .a-arrow { transform: translateX(0); opacity: 1; }
+.seg button {
+    flex: 1 0 auto; white-space: nowrap;
+    font-family: var(--sans); font-size: 13.5px; font-weight: 500;
+    padding: 8px 16px; border: none; border-radius: 8px;
+    background: transparent; color: var(--text-2); cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.seg button:hover { color: var(--text); }
+.seg button.active {
+    background: var(--card); color: var(--text); font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* ── News list ── */
+.news-list { padding: 8px 0; }
+.news-item {
+    display: block; text-decoration: none; color: inherit;
+    padding: 18px 26px;
+    border-bottom: 1px solid var(--hairline-soft);
+    transition: background 0.15s;
+}
+.news-item:last-child { border-bottom: none; }
+.news-item:hover { background: rgba(0, 0, 0, 0.02); }
+.news-item .row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.news-item .idx { font-size: 12px; font-weight: 700; color: var(--text-3); min-width: 2ch; }
+.tag {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+    padding: 2px 10px 3px; border-radius: 999px;
+}
+.news-item h4 { font-size: 16.5px; font-weight: 600; line-height: 1.5; }
+.news-item p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-top: 4px; }
+.news-item .meta {
+    margin-top: 8px; font-size: 12px; color: var(--text-3);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.news-item .meta .src { display: inline-flex; align-items: center; gap: 6px; }
+.news-item .more { color: var(--accent); opacity: 0; transition: opacity 0.15s; }
+.news-item:hover .more { opacity: 1; }
+.tab-empty { padding: 40px 20px; text-align: center; color: var(--text-3); font-size: 14px; }
+
+/* ── Archive ── */
+.archive-list { padding: 8px 0; }
+.archive-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 26px; text-decoration: none; color: inherit;
+    border-bottom: 1px solid var(--hairline-soft);
+    transition: background 0.15s;
+}
+.archive-row:last-child { border-bottom: none; }
+.archive-row:hover { background: rgba(0, 0, 0, 0.02); }
+.archive-row .a-date { font-size: 15px; font-weight: 600; }
+.archive-row .a-week { font-size: 13px; color: var(--text-3); }
+.archive-row .a-right { display: flex; align-items: center; gap: 14px; }
+.archive-row .a-count { font-size: 12px; color: var(--text-3); }
+.archive-row .a-arrow { color: var(--accent); }
+
+/* ── Footer ── */
+.footer {
+    margin-top: 56px; padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    font-size: 12.5px; color: var(--text-3);
+}
 
 /* ── Empty ── */
-.empty { text-align: center; padding: 90px 20px; color: var(--ink-faint); font-family: var(--serif); letter-spacing: 0.2em; }
-
-/* ── Footer / colophon ── */
-.footer {
-    max-width: 1080px;
-    margin: 70px auto 0;
-    padding: 26px 28px 60px;
-    border-top: 3px solid var(--ink);
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-}
-.footer .zh { font-family: var(--serif); letter-spacing: 0.1em; text-transform: none; }
-
-/* ── Reveal hooks: initial hidden states are set by GSAP only,
-     so the page stays fully visible when JS/CDN is unavailable ── */
+.empty { text-align: center; padding: 60px 20px; color: var(--text-3); font-size: 14px; }
 
 /* ── Responsive ── */
-@media (max-width: 860px) {
-    .news-columns { columns: 2; }
-    .seal { display: none; }
-}
-@media (max-width: 640px) {
-    .frontpage { padding: 104px 20px 0; }
-    .section { padding: 36px 20px 4px; }
-    .news-columns { columns: 1; }
+@media (max-width: 700px) {
+    .page { padding: 0 16px 60px; }
+    .topbar-inner { padding: 12px 16px; }
+    .hero { padding: 36px 0 8px; }
+    .hero-date { font-size: 34px; }
     .briefs { grid-template-columns: 1fr; }
-    .brief + .brief { border-left: 0; border-top: 1px solid var(--rule); padding-left: 0; }
-    .brief:first-child { padding-right: 0; }
-    .masthead-inner { padding: 11px 20px; }
-    .archive-row { grid-template-columns: 1fr auto; row-gap: 4px; }
-    .archive-row .a-week { display: none; }
+    .lead { padding: 22px 20px 20px; }
+    .lead h3 { font-size: 22px; }
+    .brief { padding: 20px 20px 18px; }
+    .news-item { padding: 16px 20px; }
+    .archive-row { padding: 14px 20px; }
 }
 </style>'''
 
 
 # ───────────────────────── shared JS ─────────────────────────
-GSAP_CDN = '''<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>'''
-
 PAGE_JS = '''<script>
-// Direction-aware masthead: hide on scroll down, return on scroll up (vanilla, always on).
+// Section tabs: filter the news list by 资讯类型 (vanilla, always on).
 (function () {
-    const mh = document.querySelector(".masthead");
-    let lastY = window.scrollY;
-    window.addEventListener("scroll", () => {
-        const y = window.scrollY;
-        if (y > 140 && y > lastY + 4) mh.classList.add("hidden");
-        else if (y < lastY - 4 || y <= 140) mh.classList.remove("hidden");
-        lastY = y;
-    }, { passive: true });
-})();
-
-// Section tabs: filter the news columns by 资讯类型 (vanilla, always on).
-(function () {
-    const tabs = document.querySelectorAll("#news-tabs .tab");
-    if (!tabs.length) return;
-    const items = document.querySelectorAll("#news-columns .news-item");
+    const seg = document.getElementById("news-seg");
+    if (!seg) return;
+    const items = document.querySelectorAll("#news-list .news-item");
     const emptyEl = document.getElementById("news-empty");
-    tabs.forEach((tab) => tab.addEventListener("click", () => {
-        tabs.forEach((t) => t.classList.remove("active"));
-        tab.classList.add("active");
-        const sec = tab.dataset.sec;
+    seg.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        seg.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const sec = btn.dataset.sec;
         let shown = 0;
         items.forEach((it) => {
             const match = sec === "all" || it.dataset.section === sec;
@@ -670,96 +331,7 @@ PAGE_JS = '''<script>
             if (match) shown++;
         });
         if (emptyEl) emptyEl.hidden = shown !== 0;
-    }));
-})();
-
-// ── GSAP choreography ──
-// Everything below only runs when the CDN delivered GSAP and the user
-// hasn't asked for reduced motion; otherwise the page is simply static.
-(function () {
-    if (!window.gsap || !window.ScrollTrigger) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.registerPlugin(ScrollTrigger);
-
-    // · Opening sequence: press-room curtain-up ·
-    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
-    tl.from(".masthead-inner", { y: -26, opacity: 0, duration: 0.6 })
-        .from(".dateline > *", { y: 14, opacity: 0, stagger: 0.08, duration: 0.5 }, "-=0.25")
-        .from(".nameplate .ch", {
-            yPercent: 118, rotate: 5, stagger: 0.075, duration: 0.95,
-        }, "-=0.2")
-        .from(".nameplate .latin, .nameplate .motto", {
-            y: 12, opacity: 0, stagger: 0.12, duration: 0.5,
-        }, "-=0.55")
-        .from(".double-rule", {
-            scaleX: 0, transformOrigin: "left center", duration: 0.9, ease: "power3.inOut",
-        }, "-=0.35");
-
-    const seal = document.querySelector(".seal");
-    if (seal) {
-        tl.from(seal, {
-            scale: 1.8, opacity: 0, rotate: -20,
-            duration: 0.42, ease: "back.out(2.4)",
-        }, "-=0.25");
-    }
-
-    // · Section headers rise as they enter ·
-    gsap.utils.toArray(".section-head").forEach((el) => {
-        gsap.from(el, {
-            y: 26, opacity: 0, duration: 0.7,
-            scrollTrigger: { trigger: el, start: "top 88%" },
-        });
     });
-
-    // · Lead story: text rises, photograph unveiled with a curtain wipe + parallax ·
-    const lead = document.querySelector(".lead");
-    if (lead) {
-        gsap.from(lead.querySelector(".lead-text"), {
-            y: 44, opacity: 0, duration: 0.9,
-            scrollTrigger: { trigger: lead, start: "top 82%" },
-        });
-        const fig = lead.querySelector("figure");
-        if (fig) {
-            gsap.fromTo(fig,
-                { clipPath: "inset(0 0 0 100%)" },
-                {
-                    clipPath: "inset(0 0 0 0%)", duration: 1.15, ease: "power4.inOut",
-                    scrollTrigger: { trigger: lead, start: "top 78%" },
-                });
-            gsap.fromTo(fig.querySelector("img"),
-                { yPercent: -6, scale: 1.08 },
-                {
-                    yPercent: 6, ease: "none",
-                    scrollTrigger: { trigger: lead, start: "top bottom", end: "bottom top", scrub: true },
-                });
-        }
-    }
-
-    // · Numbered briefs ·
-    gsap.utils.toArray(".brief").forEach((b, i) => {
-        gsap.from(b, {
-            y: 34, opacity: 0, duration: 0.7, delay: i * 0.12,
-            scrollTrigger: { trigger: b, start: "top 88%" },
-        });
-    });
-
-    // · News columns and archive rows: batched stagger on scroll ·
-    if (document.querySelector(".news-item")) {
-        ScrollTrigger.batch(".news-item", {
-            start: "top 93%",
-            onEnter: (els) => gsap.fromTo(els,
-                { y: 24, opacity: 0 },
-                { y: 0, opacity: 1, stagger: 0.05, duration: 0.55, overwrite: true }),
-        });
-    }
-    if (document.querySelector(".archive-row")) {
-        ScrollTrigger.batch(".archive-row", {
-            start: "top 94%",
-            onEnter: (els) => gsap.fromTo(els,
-                { x: -18, opacity: 0 },
-                { x: 0, opacity: 1, stagger: 0.06, duration: 0.5, overwrite: true }),
-        });
-    }
 })();
 </script>'''
 
@@ -776,9 +348,8 @@ def _item_parts(item: dict) -> dict:
         "summary": summary,
         "source": _esc(item.get("source_name", "")),
         "cat": _esc(item.get("category", "其他")),
-        "cat_color": item.get("category_color", "#93876F"),
+        "cat_color": item.get("category_color", "#0071E3"),
         "pub": _esc(item.get("published_at", "")[:10]),
-        "image": item.get("image_url", ""),
         "heat": item.get("sources_count", 1),
         "linked": _valid_url(item.get("url", "")),
     }
@@ -791,59 +362,49 @@ def _heat_html(p: dict) -> str:
     return ""
 
 
+def _tag_html(p: dict) -> str:
+    return f'<span class="tag" style="color:{p["cat_color"]};background:{p["cat_color"]}1a">{p["cat"]}</span>'
+
+
+def _byline_html(p: dict, extra: str = "") -> str:
+    return f'<div class="byline"><span>{p["source"]} · {p["pub"]}</span>{_heat_html(p)}{extra}</div>'
+
+
 def _news_item_html(item: dict, idx: int) -> str:
-    """One story in the news columns. Renders as <a> only when a real URL exists."""
     p = _item_parts(item)
     sec = section_of_category(item.get("category_id", ""))
     tag, attrs = ("a", f'href="{_esc(p["url"])}" target="_blank" rel="noopener"') if p["linked"] else ("article", "")
     more = '<span class="more">阅读原文 →</span>' if p["linked"] else ""
     return f'''
     <{tag} {attrs} class="news-item" data-section="{sec}">
-        <div class="row"><span class="idx">{idx:02d}</span><span class="tag" style="color:{p['cat_color']}">{p['cat']}</span></div>
+        <div class="row"><span class="idx">{idx:02d}</span>{_tag_html(p)}</div>
         <h4>{p['title']}</h4>
-        <p>{p['summary']}</p>
-        <div class="meta"><span>{p['source']} · {p['pub']}</span>{_heat_html(p)}{more}</div>
+        {f'<p>{p["summary"]}</p>' if p["summary"] else ""}
+        <div class="meta"><span class="src">{p['source']} · {p['pub']}</span>{_heat_html(p)}{more}</div>
     </{tag}>'''
 
 
 def _lead_html(item: dict) -> str:
-    """The front-page lead story (头条), with photograph when the feed provides one."""
     p = _item_parts(item)
     tag, attrs = ("a", f'href="{_esc(p["url"])}" target="_blank" rel="noopener"') if p["linked"] else ("article", "")
-    fig = ""
-    if p["image"]:
-        fig = (f'<figure><img src="{_esc(p["image"])}" alt="{p["title"]}" loading="lazy" '
-               f'onerror="this.parentElement.remove()"></figure>')
     return f'''
-    <{tag} {attrs} class="lead">
-        <div class="lead-text">
-            <span class="kicker">头条 · {p['cat']}</span>
-            <h3>{p['title']}</h3>
-            <p>{p['summary']}</p>
-            <div class="byline"><span>{p['source']}</span><span>{p['pub']}</span>{_heat_html(p)}</div>
-        </div>
-        {fig}
+    <{tag} {attrs} class="lead card">
+        <span class="kicker"><span class="dot" style="background:{p['cat_color']}"></span>头条 · {p['cat']}</span>
+        <h3>{p['title']}</h3>
+        {f'<p>{p["summary"]}</p>' if p["summary"] else ""}
+        {_byline_html(p)}
     </{tag}>'''
 
 
 def _brief_html(item: dict, num: int) -> str:
-    """A numbered sub-highlight (贰条 / 叁条), with a thumbnail when available."""
     p = _item_parts(item)
     tag, attrs = ("a", f'href="{_esc(p["url"])}" target="_blank" rel="noopener"') if p["linked"] else ("article", "")
-    thumb = ""
-    if p["image"]:
-        thumb = (f'<img class="thumb" src="{_esc(p["image"])}" alt="{p["title"]}" loading="lazy" '
-                 f'onerror="this.remove()">')
     return f'''
-    <{tag} {attrs} class="brief">
+    <{tag} {attrs} class="brief card">
         <span class="num">{num:02d}</span>
-        <div>
-            {thumb}
-            <span class="kicker">{p['cat']}</span>
-            <h4>{p['title']}</h4>
-            <p>{p['summary']}</p>
-            <div class="byline"><span>{p['source']}</span><span>{p['pub']}</span>{_heat_html(p)}</div>
-        </div>
+        <h4>{p['title']}</h4>
+        {f'<p>{p["summary"]}</p>' if p["summary"] else ""}
+        {_byline_html(p)}
     </{tag}>'''
 
 
@@ -851,18 +412,17 @@ def _highlights_section(highlights: list[dict]) -> str:
     if not highlights:
         return ""
     lead = _lead_html(highlights[0])
-    briefs = '\n'.join(_brief_html(it, i + 2) for i, it in enumerate(highlights[1:3]))
+    briefs = "\n".join(_brief_html(it, i + 2) for i, it in enumerate(highlights[1:3]))
     briefs_html = f'<div class="briefs">{briefs}</div>' if briefs else ""
     return f'''
     <section class="section">
         <div class="section-head">
-            <h2 class="section-title"><span class="no">壹</span>今日看点</h2>
-            <span class="section-note">Front Page</span>
+            <h2 class="section-title">今日看点</h2>
+            <span class="section-note">Headlines</span>
         </div>
         {lead}
         {briefs_html}
     </section>'''
-
 
 
 def _news_section(items: list[dict]) -> str:
@@ -872,21 +432,18 @@ def _news_section(items: list[dict]) -> str:
     for it in items:
         sec = section_of_category(it.get("category_id", ""))
         counts[sec] = counts.get(sec, 0) + 1
-    tabs = [f'<button class="tab active" data-sec="all">全部<span class="n">{len(items)}</span></button>']
+    tabs = [f'<button class="active" data-sec="all">全部 · {len(items)}</button>']
     for sec_id, sec_name in SECTIONS:
-        tabs.append(f'<button class="tab" data-sec="{sec_id}">{sec_name}<span class="n">{counts.get(sec_id, 0)}</span></button>')
-    cards = '\n'.join(_news_item_html(it, i + 1) for i, it in enumerate(items))
+        tabs.append(f'<button data-sec="{sec_id}">{sec_name} · {counts.get(sec_id, 0)}</button>')
+    cards = "\n".join(_news_item_html(it, i + 1) for i, it in enumerate(items))
     return f'''
     <section class="section">
         <div class="section-head">
-            <h2 class="section-title"><span class="no">叁</span>全部资讯</h2>
+            <h2 class="section-title">全部资讯</h2>
             <span class="section-note">{len(items)} 条 · All Stories</span>
         </div>
-        <div class="tabs" id="news-tabs">
-            {''.join(tabs)}
-        </div>
-        <div class="news-columns" id="news-columns">
-            {cards}
+        <div class="seg" id="news-seg">{''.join(tabs)}</div>
+        <div class="card news-list" id="news-list">{cards}
         </div>
         <div class="tab-empty" id="news-empty" hidden>本栏目今日暂无资讯</div>
     </section>'''
@@ -901,60 +458,34 @@ def _archive_section(history: list[dict]) -> str:
         <a href="./{b['slug']}/" class="archive-row">
             <span class="a-date">{_esc(b['date'][:10])}</span>
             <span class="a-week">{_esc(b['date_cn'].split(' ')[-1])}</span>
-            <span class="a-count">{len(b.get('items', []))} 条资讯</span>
-            <span class="a-arrow">→</span>
+            <span class="a-right"><span class="a-count">{len(b.get('items', []))} 条</span><span class="a-arrow">→</span></span>
         </a>'''
     return f'''
     <section class="section">
         <div class="section-head">
-            <h2 class="section-title"><span class="no">肆</span>往期存档</h2>
+            <h2 class="section-title">往期存档</h2>
             <span class="section-note">{len(history)} 期 · Archive</span>
         </div>
-        {rows}
+        <div class="card archive-list">{rows}
+        </div>
     </section>'''
 
 
-def _masthead(home_href: str, right_html: str) -> str:
+def _hero(date_cn: str, issue_no: str) -> str:
+    date_str, _, weekday = date_cn.partition(" ")
     return f'''
-    <header class="masthead">
-        <div class="masthead-inner">
-            <a href="{home_href}" class="brand">
-                <span class="brand-text">
-                    <span class="brand-name">AI 早报</span>
-                    <span class="brand-sub"><img src="{home_href}icon.jpg" alt="米桶">米桶</span>
-                </span>
-            </a>
-            <span class="masthead-meta">{right_html}</span>
-        </div>
-    </header>'''
-
-
-def _frontpage(date_cn: str, issue_no: str) -> str:
-    # split the nameplate into per-character spans for the GSAP stagger
-    chars = ""
-    for c in "AI 早报":
-        if c == " ":
-            chars += '<span class="ch-gap"></span>'
-        else:
-            chars += f'<span class="ch-wrap"><span class="ch">{c}</span></span>'
-    return f'''
-    <section class="frontpage">
-        <div class="dateline">
-            <span>{date_cn}</span>
-            <span class="live">每日更新中</span>
+    <section class="hero">
+        <div class="eyebrow">Mitong AI Daily Briefing</div>
+        <h1 class="hero-date">{date_str}</h1>
+        <div class="hero-meta">
+            <span>{weekday}</span>
             <span>{issue_no}</span>
+            <span class="motto">每日精选 · 十秒速览</span>
         </div>
-        <div class="nameplate">
-            <div class="seal">米桶</div>
-            <h1>{chars}</h1>
-            <div class="latin">Mitong AI Daily Briefing</div>
-            <div class="motto">每日精选 · 十秒速览</div>
-        </div>
-        <hr class="double-rule">
     </section>'''
 
 
-def _page_shell(title: str, body: str, prefix: str = "./") -> str:
+def _page_shell(title: str, body: str, prefix: str = "./", home_href: str = "./", right_html: str = "") -> str:
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -965,14 +496,25 @@ def _page_shell(title: str, body: str, prefix: str = "./") -> str:
     {CSS}
 </head>
 <body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="{home_href}" class="brand">
+                <img src="{prefix}icon.jpg" alt="米桶">
+                <span class="brand-name">米桶 AI 早报</span>
+            </a>
+            <span class="topbar-right">{right_html}</span>
+        </div>
+    </header>
+
+    <div class="page">
 {body}
+    </div>
 
     <footer class="footer">
-        <span class="zh">米桶 AI 早报 · 仅供信息参考，不构成任何建议</span>
-        <span>Sources · 机器之心 / 量子位 / 36氪 / BBC / FT / 华尔街见闻</span>
+        <span>米桶 AI 早报 · 仅供信息参考，不构成任何建议</span>
+        <span>机器之心 / 量子位 / 36氪 / BBC / FT / 华尔街见闻</span>
     </footer>
 
-{GSAP_CDN}
 {PAGE_JS}
 </body>
 </html>'''
@@ -983,20 +525,19 @@ def _detail_page_html(b: dict) -> str:
     items = b.get("items", [])
     highlights = b.get("highlights") or items[:3]
     body = f'''
-    {_masthead("../../", '<a href="../../">← 返回首页</a>')}
-    {_frontpage(b["date_cn"], b["issue_no"])}
+    {_hero(b["date_cn"], b["issue_no"])}
     {_highlights_section(highlights)}
     {_news_section(items)}
     {'' if items else '<div class="empty">当日暂无资讯记录</div>'}'''
-    return _page_shell(f"{b['date'][:10]} · 米桶 AI 早报", body, prefix="../../")
+    return _page_shell(f"{b['date'][:10]} · 米桶 AI 早报", body, prefix="../../",
+                       home_href="../../", right_html='<a href="../../">← 返回首页</a>')
 
 
 def _home_page_html(latest: dict, history: list[dict]) -> str:
     items = latest.get("items", [])
     highlights = latest.get("highlights") or items[:3]
     body = f'''
-    {_masthead("./", latest["date_cn"])}
-    {_frontpage(latest["date_cn"], latest["issue_no"])}
+    {_hero(latest["date_cn"], latest["issue_no"])}
     {_highlights_section(highlights)}
     {_news_section(items)}
     {_archive_section(history)}
