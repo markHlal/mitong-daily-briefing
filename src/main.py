@@ -9,6 +9,7 @@ from pathlib import Path
 
 from collector.rss_fetcher import fetch_all_sources
 from collector.dedup import deduplicate
+from collector.github_trending import fetch_github_trending
 from curator.classifier import classify_and_rank
 from generator.detail_card import save_detail_image
 from generator.highlights_card import save_highlights_image
@@ -48,12 +49,18 @@ def run(date_str: str | None = None) -> dict:
     data_dir.mkdir(parents=True, exist_ok=True)
     data_path = data_dir / "data.json"
 
+    # Bonus section: fastest-growing GitHub repos (non-fatal on failure)
+    github_trending = fetch_github_trending(limit=10)
+    github_ai_trending = fetch_github_trending(limit=10, topic="ai")
+
     with open(data_path, "w", encoding="utf-8") as f:
         json.dump({
             "date": date_str,
             "date_key": date_part,
             "items": curated,
             "highlights": curated[:3],
+            "github_trending": github_trending,
+            "github_ai_trending": github_ai_trending,
         }, f, ensure_ascii=False, indent=2)
     logger.info("Saved data to %s", data_path)
 

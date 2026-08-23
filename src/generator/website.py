@@ -92,6 +92,8 @@ def get_all_briefings() -> list[dict]:
             "issue_no": _issue_no(date_dir.name),
             "items": data.get("items", []),
             "highlights": data.get("highlights", []),
+            "github_trending": data.get("github_trending", []),
+            "github_ai_trending": data.get("github_ai_trending", []),
         })
     return list(reversed(briefings))
 
@@ -175,6 +177,8 @@ a { color: inherit; }
 }
 .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
 .section-note { font-size: 13px; color: var(--text-3); }
+.jump-link { font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.jump-link:hover { text-decoration: underline; }
 
 /* ── Card (shared) ── */
 .card {
@@ -267,6 +271,39 @@ a { color: inherit; }
 .news-item:hover .more { opacity: 1; }
 .tab-empty { padding: 40px 20px; text-align: center; color: var(--text-3); font-size: 14px; }
 
+/* ── GitHub trending ── */
+.gh-note {
+    font-size: 13px; color: var(--text-2); line-height: 1.7;
+    margin: -6px 0 14px; padding: 12px 16px;
+    background: rgba(0, 113, 227, 0.05); border-radius: 12px;
+}
+.gh-list { padding: 8px 0; }
+.gh-row {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 26px; text-decoration: none; color: inherit;
+    border-bottom: 1px solid var(--hairline-soft);
+    transition: background 0.15s;
+}
+.gh-row:last-child { border-bottom: none; }
+.gh-row:hover { background: rgba(0, 0, 0, 0.02); }
+.gh-rank {
+    font-size: 15px; font-weight: 800; color: var(--accent);
+    min-width: 2ch; text-align: right; line-height: 1.4;
+}
+.gh-body { flex: 1; min-width: 0; }
+.gh-name {
+    font-size: 15px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: color 0.15s;
+}
+.gh-row:hover .gh-name { color: var(--accent); }
+.gh-lang { font-size: 11px; color: var(--text-3); font-weight: 400; }
+.gh-desc { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-top: 4px; }
+.gh-side { text-align: right; display: grid; gap: 3px; justify-items: end; flex-shrink: 0; }
+.gh-stars { font-size: 14px; font-weight: 700; }
+.gh-stars .star { color: #F5A623; margin-right: 2px; }
+.gh-created { font-size: 11px; color: var(--text-3); }
+
 /* ── Archive ── */
 .archive-list { padding: 8px 0; }
 .archive-row {
@@ -306,6 +343,8 @@ a { color: inherit; }
     .brief { padding: 20px 20px 18px; }
     .news-item { padding: 16px 20px; }
     .archive-row { padding: 14px 20px; }
+    .gh-row { padding: 14px 20px; gap: 12px; }
+    .gh-side { display: none; }
 }
 </style>'''
 
@@ -331,6 +370,21 @@ PAGE_JS = '''<script>
             if (match) shown++;
         });
         if (emptyEl) emptyEl.hidden = shown !== 0;
+    });
+})();
+
+// GitHub 榜单分段切换（全部 / AI 主题）
+(function () {
+    const seg = document.getElementById("gh-seg");
+    if (!seg) return;
+    const panes = { all: document.getElementById("gh-all"), ai: document.getElementById("gh-ai") };
+    seg.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        seg.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const g = btn.dataset.g;
+        Object.keys(panes).forEach((k) => { if (panes[k]) panes[k].hidden = k !== g; });
     });
 })();
 </script>'''
@@ -418,7 +472,7 @@ def _highlights_section(highlights: list[dict]) -> str:
     <section class="section">
         <div class="section-head">
             <h2 class="section-title">今日看点</h2>
-            <span class="section-note">Headlines</span>
+            <a class="jump-link" href="#github-trending">GitHub 热点追踪 →</a>
         </div>
         {lead}
         {briefs_html}
@@ -446,6 +500,57 @@ def _news_section(items: list[dict]) -> str:
         <div class="card news-list" id="news-list">{cards}
         </div>
         <div class="tab-empty" id="news-empty" hidden>本栏目今日暂无资讯</div>
+    </section>'''
+
+
+def _github_trending_section(all_repos: list[dict], ai_repos: list[dict]) -> str:
+    """GitHub 标星榜 — 全部 / AI 主题两个子榜单，分段控件切换。"""
+    if not all_repos and not ai_repos:
+        return ""
+
+    def _rows(repos: list[dict]) -> str:
+        out = ""
+        for r in repos:
+            name = _esc(r.get("name", ""))
+            url = r.get("url", "")
+            desc_text = _esc((r.get("description") or "")[:90])
+            lang = _esc(r.get("language", ""))
+            stars = r.get("stars", 0)
+            created = r.get("created_at", "")
+            tag, attrs = ("a", f'href="{_esc(url)}" target="_blank" rel="noopener"') if _valid_url(url) else ("div", "")
+            lang_html = f'<span class="gh-lang"> · {lang}</span>' if lang else ""
+            desc_html = f'<div class="gh-desc">{desc_text}</div>' if desc_text else ""
+            out += f'''
+        <{tag} {attrs} class="gh-row">
+            <span class="gh-rank">{r.get("rank", 0):02d}</span>
+            <div class="gh-body">
+                <span class="gh-name">{name}{lang_html}</span>
+                {desc_html}
+            </div>
+            <span class="gh-side">
+                <span class="gh-stars"><span class="star">★</span>{stars:,}</span>
+                <span class="gh-created">{created}</span>
+            </span>
+        </{tag}>'''
+        return out
+
+    all_rows = _rows(all_repos)
+    ai_rows = _rows(ai_repos)
+    return f'''
+    <section class="section" id="github-trending">
+        <div class="section-head">
+            <h2 class="section-title">GitHub 标星榜</h2>
+            <span class="section-note">近 30 天增长最快 · Trending</span>
+        </div>
+        <p class="gh-note">榜单按近 30 天新建仓库的标星（Star）数排序——涨星越快、星数越多，代表当下最受开发者关注的热门开源项目。数据来自 GitHub 官方搜索接口，每日更新。</p>
+        <div class="seg" id="gh-seg">
+            <button class="active" data-g="all">全部 · {len(all_repos)}</button>
+            <button data-g="ai">AI 主题 · {len(ai_repos)}</button>
+        </div>
+        <div class="card gh-list" id="gh-all">{all_rows}
+        </div>
+        <div class="card gh-list" id="gh-ai" hidden>{ai_rows}
+        </div>
     </section>'''
 
 
@@ -528,6 +633,7 @@ def _detail_page_html(b: dict) -> str:
     {_hero(b["date_cn"], b["issue_no"])}
     {_highlights_section(highlights)}
     {_news_section(items)}
+    {_github_trending_section(b.get("github_trending", []), b.get("github_ai_trending", []))}
     {'' if items else '<div class="empty">当日暂无资讯记录</div>'}'''
     return _page_shell(f"{b['date'][:10]} · 米桶 AI 早报", body, prefix="../../",
                        home_href="../../", right_html='<a href="../../">← 返回首页</a>')
@@ -540,6 +646,7 @@ def _home_page_html(latest: dict, history: list[dict]) -> str:
     {_hero(latest["date_cn"], latest["issue_no"])}
     {_highlights_section(highlights)}
     {_news_section(items)}
+    {_github_trending_section(latest.get("github_trending", []), latest.get("github_ai_trending", []))}
     {_archive_section(history)}
     {'' if items else '<div class="empty">暂无资讯，敬请期待</div>'}'''
     return _page_shell("米桶 AI 早报", body)

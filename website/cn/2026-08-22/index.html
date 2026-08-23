@@ -83,6 +83,8 @@ a { color: inherit; }
 }
 .section-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
 .section-note { font-size: 13px; color: var(--text-3); }
+.jump-link { font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+.jump-link:hover { text-decoration: underline; }
 
 /* ── Card (shared) ── */
 .card {
@@ -175,6 +177,39 @@ a { color: inherit; }
 .news-item:hover .more { opacity: 1; }
 .tab-empty { padding: 40px 20px; text-align: center; color: var(--text-3); font-size: 14px; }
 
+/* ── GitHub trending ── */
+.gh-note {
+    font-size: 13px; color: var(--text-2); line-height: 1.7;
+    margin: -6px 0 14px; padding: 12px 16px;
+    background: rgba(0, 113, 227, 0.05); border-radius: 12px;
+}
+.gh-list { padding: 8px 0; }
+.gh-row {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 16px 26px; text-decoration: none; color: inherit;
+    border-bottom: 1px solid var(--hairline-soft);
+    transition: background 0.15s;
+}
+.gh-row:last-child { border-bottom: none; }
+.gh-row:hover { background: rgba(0, 0, 0, 0.02); }
+.gh-rank {
+    font-size: 15px; font-weight: 800; color: var(--accent);
+    min-width: 2ch; text-align: right; line-height: 1.4;
+}
+.gh-body { flex: 1; min-width: 0; }
+.gh-name {
+    font-size: 15px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: color 0.15s;
+}
+.gh-row:hover .gh-name { color: var(--accent); }
+.gh-lang { font-size: 11px; color: var(--text-3); font-weight: 400; }
+.gh-desc { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-top: 4px; }
+.gh-side { text-align: right; display: grid; gap: 3px; justify-items: end; flex-shrink: 0; }
+.gh-stars { font-size: 14px; font-weight: 700; }
+.gh-stars .star { color: #F5A623; margin-right: 2px; }
+.gh-created { font-size: 11px; color: var(--text-3); }
+
 /* ── Archive ── */
 .archive-list { padding: 8px 0; }
 .archive-row {
@@ -214,6 +249,8 @@ a { color: inherit; }
     .brief { padding: 20px 20px 18px; }
     .news-item { padding: 16px 20px; }
     .archive-row { padding: 14px 20px; }
+    .gh-row { padding: 14px 20px; gap: 12px; }
+    .gh-side { display: none; }
 }
 </style>
 </head>
@@ -244,7 +281,7 @@ a { color: inherit; }
     <section class="section">
         <div class="section-head">
             <h2 class="section-title">今日看点</h2>
-            <span class="section-note">Headlines</span>
+            <a class="jump-link" href="#github-trending">GitHub 热点追踪 →</a>
         </div>
         
     <a href="https://wallstreetcn.com/articles/3780034" target="_blank" rel="noopener" class="lead card">
@@ -399,6 +436,7 @@ a { color: inherit; }
         <div class="tab-empty" id="news-empty" hidden>本栏目今日暂无资讯</div>
     </section>
     
+    
     </div>
 
     <footer class="footer">
@@ -426,6 +464,21 @@ a { color: inherit; }
             if (match) shown++;
         });
         if (emptyEl) emptyEl.hidden = shown !== 0;
+    });
+})();
+
+// GitHub 榜单分段切换（全部 / AI 主题）
+(function () {
+    const seg = document.getElementById("gh-seg");
+    if (!seg) return;
+    const panes = { all: document.getElementById("gh-all"), ai: document.getElementById("gh-ai") };
+    seg.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        seg.querySelectorAll("button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const g = btn.dataset.g;
+        Object.keys(panes).forEach((k) => { if (panes[k]) panes[k].hidden = k !== g; });
     });
 })();
 </script>

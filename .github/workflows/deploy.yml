@@ -48,6 +48,7 @@ jobs:
       - name: Run daily briefing pipeline
         env:
           KIMI_API_KEY: ${{ secrets.KIMI_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           PYTHONPATH=src python3 src/main.py || true
 
